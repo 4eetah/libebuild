@@ -34,7 +34,7 @@ int getsuffix(const char *suff)
             return i;
 }
 
-bool isversion(const char *vers)
+int isversion(const char *vers)
 {
     char *ptr = (char*)vers;
     int tmp;
@@ -104,7 +104,7 @@ static CPV *cpv_alloc_versioned(const char *cpv_string)
         ret->PN = ptr + 1;
     } else {
         ret->PN = ret->CATEGORY;
-        ret->CATEGORY = NULL; // category may be empty
+        ret->CATEGORY += cpv_string_len - 1; // category may be empty
     }
     if (INVALID_FIRST_CHAR(*(ret->PN)))
         goto cpv_error;
@@ -134,9 +134,9 @@ static CPV *cpv_alloc_versioned(const char *cpv_string)
  
     // version
     while (ptr > ret->PN) {
-        if (ptr[-1] == '-' && isdigit(ptr[0])) {
-            ptr[-1] = '\0';
-            ret->PV = ptr;
+        if (ptr[0] == '-' && isdigit(ptr[1])) {
+            ptr[0] = '\0';
+            ret->PV = &ptr[1];
             break;
         }
         ptr--;
@@ -223,6 +223,12 @@ static CPV *cpv_alloc_unversioned(const char *cpv_string)
     strcpy(ret->CATEGORY, cpv_string);
 
     ptr = ret->CATEGORY;
+    ret->P = ptr + cpv_string_len - 1;
+    ret->PV = ret->P;
+    ret->PR = ret->P;
+    ret->PVR = ret->P;
+    ret->PF = ret->P;
+
     while (*ptr && *++ptr != '/')
         if (!VALID_CHAR(*ptr))
             goto cpv_error;
@@ -235,7 +241,7 @@ static CPV *cpv_alloc_unversioned(const char *cpv_string)
         ret->PN = ptr + 1;
     } else {
         ret->PN = ret->CATEGORY;
-        ret->CATEGORY = NULL; // category may be empty
+        ret->CATEGORY = ret->P; // category may be empty
     }
     if (INVALID_FIRST_CHAR(*(ret->PN)))
         goto cpv_error;
@@ -261,7 +267,7 @@ cpv_error:
     return NULL;
 }
 
-CPV *cpv_alloc(const char *cpv_string, bool versioned)
+CPV *cpv_alloc(const char *cpv_string, int versioned)
 {
     if (versioned)
         return cpv_alloc_versioned(cpv_string);

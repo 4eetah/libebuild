@@ -7,7 +7,7 @@ int main(int argc, char **argv)
     int len = 6;
     printf("len = %d\n", len);
     for (i = 0; i < len; ++i)
-        printf("hassuffix(%s) = %d\n", my_suffix[i], hassuffix(my_suffix[i]));
+        printf("getsuffix(%s) = %d\n", my_suffix[i], getsuffix(my_suffix[i]));
 
     const char *v1 = "4.2.1_beta100_pre200-r300";
     const char *v2 = "4.2.1a_beta100_pre200-r300";
@@ -34,14 +34,16 @@ int main(int argc, char **argv)
     const char *c4 = "hello/world-4.10";
     const char *c5 = "hello/world";
     const char *c7 = "hello/world-4.10a";
+    const char *c8 = "hello/world-4";
 
-    CPV *cpv1 = cpv_alloc(c1, true);
-    CPV *cpv2 = cpv_alloc(c2, true);
-    CPV *cpv3 = cpv_alloc(c3, true);
-    CPV *cpv4 = cpv_alloc(c4, true);
-    CPV *cpv5 = cpv_alloc(c5, true);
-    CPV *cpv6 = cpv_alloc(c5, false);
-    CPV *cpv7 = cpv_alloc(c7, true);
+    CPV *cpv1 = cpv_alloc(c1, 1);
+    CPV *cpv2 = cpv_alloc(c2, 1);
+    CPV *cpv3 = cpv_alloc(c3, 1);
+    CPV *cpv4 = cpv_alloc(c4, 1);
+    CPV *cpv5 = cpv_alloc(c5, 1);
+    CPV *cpv6 = cpv_alloc(c5, 0);
+    CPV *cpv7 = cpv_alloc(c7, 1);
+    CPV *cpv8 = cpv_alloc(c8, 1);
 
     cpv_print(cpv1);
     printf("***\n");
@@ -56,6 +58,8 @@ int main(int argc, char **argv)
     cpv_print(cpv6);
     printf("***\n");
     cpv_print(cpv7);
+    printf("***\n");
+    cpv_print(cpv8);
 
     cpv_free(cpv1);
     cpv_free(cpv2);
@@ -64,4 +68,6 @@ int main(int argc, char **argv)
     cpv_free(cpv5);
     cpv_free(cpv6);
     cpv_free(cpv7);
+    cpv_free(cpv8);
+
 }

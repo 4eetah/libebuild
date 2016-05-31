@@ -1,8 +1,7 @@
-from distutils.core import setup, Extension
-#modules = Extension('boolean', sources = ['boolean_py.c', 'boolean.c'])
-modules = Extension('cpv', sources = ['cpv_py.c', 'cpv.c'])
-setup(name = 'libebuild',
-      version = '1.0',
-      description = 'libebuild',
-      ext_modules = [modules]
-      )
+from distutils.core import setup
+from distutils.extension import Extension
+from Cython.Build import cythonize
+
+setup(
+    ext_modules = cythonize([Extension("cpv", ["cython_ext/cpv.pyx"])])
+)

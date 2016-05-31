@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <stdbool.h>
 
 #ifdef DOTS_DISALLOWED
 #define VALID_CHAR(c) (isalnum(c) \
@@ -49,10 +48,13 @@ typedef enum {
     /* <= */ ATOM_OP_OLDER_EQUAL,
     /* <  */ ATOM_OP_OLDER,
     /* ~  */ ATOM_OP_PV_EQUAL,
-    /* !  */ ATOM_OP_BLOCK,
-    /* !! */ ATOM_OP_BLOCK_HARD,
     /* *  */ ATOM_OP_STAR,
 } atom_op;
+
+typedef enum {
+    /* !  */ ATOM_BLOCK_WEAK = 0,
+    /* !! */ ATOM_BLOCK_STRONG,
+} atom_block;
 
 typedef struct {
     version_suffixes suffix;
@@ -71,11 +73,10 @@ typedef struct {
     suffix_ver *suffixes;
 } CPV;
 
-CPV *cpv_alloc(const char *cpv_string, bool versioned);
+CPV *cpv_alloc(const char *cpv_string, int versioned);
 void cpv_free(CPV *cpv);
-const char *cpv_err_msg(const CPV *cpv);
-bool isversion(const char *version);
-int hassuffix(const char *suff);
+int isversion(const char *version);
+int getsuffix(const char *suff);
 void cpv_print(const CPV *cpv);
 
 typedef struct {
@@ -91,7 +92,8 @@ typedef struct {
     char **USE_DEPS;
     char letter; /* optional version letter */
     suffix_ver *suffixes;
-    atom_op *pfx_op, *sfx_op;
+    atom_op pfx_op, sfx_op;
+    atom_block block_op;
 } ATOM;
 
 #define err(msg) do { perror(msg); exit(1); } while (0)
