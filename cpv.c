@@ -24,7 +24,7 @@ void cpv_print(const CPV *cpv)
     }
 }
 
-int hassuffix(const char *suff)
+int getsuffix(const char *suff)
 {
     size_t len = sizeof(version_suffixes_str) / sizeof(*version_suffixes_str);
     int i;
@@ -34,7 +34,7 @@ int hassuffix(const char *suff)
             return i;
 }
 
-int isversion(const char *vers)
+bool isversion(const char *vers)
 {
     char *ptr = (char*)vers;
     int tmp;
@@ -53,7 +53,7 @@ int isversion(const char *vers)
         else
             return 0;
 
-    while (ptr[0] == '_' && (tmp = strlen(version_suffixes_str[hassuffix(&ptr[1])]))) {
+    while (ptr[0] == '_' && (tmp = strlen(version_suffixes_str[getsuffix(&ptr[1])]))) {
         ptr += tmp + 1;
         while (isdigit(*ptr)) //optional suffix integer
             ++ptr;
@@ -98,7 +98,7 @@ static CPV *cpv_alloc_versioned(const char *cpv_string)
 
     // category
     if (*ptr) {
-        if (INVALID_FIRST_CAT_CHAR(*(ret->CATEGORY)))
+        if (INVALID_FIRST_CHAR(*(ret->CATEGORY)))
             goto cpv_error;
         *ptr = '\0';
         ret->PN = ptr + 1;
@@ -106,14 +106,14 @@ static CPV *cpv_alloc_versioned(const char *cpv_string)
         ret->PN = ret->CATEGORY;
         ret->CATEGORY = NULL; // category may be empty
     }
-    if (INVALID_FIRST_PKG_CHAR(*(ret->PN)))
+    if (INVALID_FIRST_CHAR(*(ret->PN)))
         goto cpv_error;
     strcpy(ret->PF, ret->PN);
 
     // revision
     ptr = ret->PN + strlen(ret->PN) - 1;
     tmp_ptr = ptr;
-    ret->PV = ptr;
+    ret->PV = ptr + 1;
     while (ptr > ret->PN) {
         if (!VALID_CHAR(*ptr))
             goto cpv_error;
@@ -171,7 +171,7 @@ static CPV *cpv_alloc_versioned(const char *cpv_string)
         if (!(tmp_ptr = strchr(&ptr[1], '_')))
             tmp_ptr = ptr + strlen(ptr);
 
-        sid = hassuffix(&ptr[1]);
+        sid = getsuffix(&ptr[1]);
         ret->suffixes[id].suffix = sid;
         sid_len = strlen(version_suffixes_str[sid]);
         ptr += sid_len;
@@ -229,7 +229,7 @@ static CPV *cpv_alloc_unversioned(const char *cpv_string)
 
     // category
     if (*ptr) {
-        if (INVALID_FIRST_CAT_CHAR(*(ret->CATEGORY)))
+        if (INVALID_FIRST_CHAR(*(ret->CATEGORY)))
             goto cpv_error;
         *ptr = '\0';
         ret->PN = ptr + 1;
@@ -237,7 +237,7 @@ static CPV *cpv_alloc_unversioned(const char *cpv_string)
         ret->PN = ret->CATEGORY;
         ret->CATEGORY = NULL; // category may be empty
     }
-    if (INVALID_FIRST_PKG_CHAR(*(ret->PN)))
+    if (INVALID_FIRST_CHAR(*(ret->PN)))
         goto cpv_error;
 
     // pkgname shouldn't end with a hyphen followed by a valid version
