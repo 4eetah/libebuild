@@ -3,7 +3,7 @@ cdef extern from "cpv.h":
         char *P
         char *PN
         char *PV
-        char *PR
+        unsigned int PR_int
         char *PVR
         char *PF
         char *CATEGORY

@@ -7,7 +7,7 @@ cdef class cpv:
     cdef readonly char *P
     cdef readonly char *PN
     cdef readonly char *PV
-    cdef readonly char *PR
+    cdef readonly unsigned int PR
     cdef readonly char *PVR
     cdef readonly char *PF
     cdef readonly char *CATEGORY
@@ -19,17 +19,13 @@ cdef class cpv:
         self.P = self._cpv.P
         self.PN = self._cpv.PN
         self.PV = self._cpv.PV
-        self.PR = self._cpv.PR
+        self.PR = self._cpv.PR_int
         self.PVR = self._cpv.PVR
         self.PF = self._cpv.PF
         self.CATEGORY = self._cpv.CATEGORY
 
     def __dealloc__(self):
-        if self._cpv is not NULL:
-            ccpv.cpv_free(self._cpv)
+        ccpv.cpv_free(self._cpv)
 
     def __str__(self):
-        if self.PV == b'':
-            return self.CATEGORY + "/" + self.PN
-        else:
-            return self.CATEGORY + "/" + self.PF
+        return self.CATEGORY + "/" + self.PF

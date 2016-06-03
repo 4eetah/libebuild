@@ -20,3 +20,4 @@ class ParsingTest(TestCase):
         self.assertRaises(InvalidCPV, cpv, "hello/world-4.10", versioned=False)
         self.assertRaises(InvalidCPV, cpv, "hello/world", versioned=True)
         self.assertRaises(TypeError, cpv, "hello/world-4.10", keyword=True)
+        self.assertIsInstance(cpv("sys-apps/portage-2.1a_alpha100_pre_p10-r100"), cpv)

@@ -3,8 +3,27 @@ PYMOD=$(patsubst %.py,%,$(PYTEST))
 pytest: $(PYTEST) 
 	python -m unittest $(PYMOD)
 
-PROJ=..
-CFLAGS=-I$(PROJ) -O0 -g
-mytest: $(PROJ)/common.h $(PROJ)/cpv.c mytest.c
-	$(CC) -o $@ $(PROJ)/cpv.c mytest.c $(CFLAGS)
 
+SRC_DIR=..
+CFLAGS=-I$(SRC_DIR) -O0 -g
+MYTEST=$(wildcard mytest_*.c)
+MYMOD=$(patsubst %.c,%,$(MYTEST))
+SRC=$(wildcard $(SRC_DIR)/*.c)
+OBJ=$(patsubst %.c,%.o,$(SRC))
+
+mytest: $(MYMOD) 
+
+%.o: %.c $(SRC_DIR)/common.h
+	$(CC) -c -o $@ $< $(CFLAGS)
+
+mytest_cpv: $(SRC) mytest_cpv.o
+	$(CC) -o $@ $^ $(CFLAGS)
+
+mytest_atom: $(SRC) mytest_atom.o
+	$(CC) -o $@ $^ $(CFLAGS)
+
+mytest_validate: $(SRC) mytest_validate.o
+	$(CC) -o $@ $^ $(CFLAGS)
+
+clean:
+	rm -f $(SRC_DIR)/*.o *.o $(MYMOD)
