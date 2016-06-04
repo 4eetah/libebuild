@@ -1,55 +1,66 @@
 #include "common.h"
+#include <assert.h>
+
+const char *valid_cpv_vers_str[] = {
+"hello/world-4.2.1a_beta100_pre200-r300",
+"hello/world-4.10",
+"hello/world-4.10a",
+"hello/world-4",
+};
+
+const char *invalid_cpv_vers_str[] = {
+"hello/world-4.2.1ab_beta100_pre200-r300",
+"world-4.2.1a_-r300",
+"hello/world",
+"hello-world/",
+"/hello-world",
+};
+
+size_t max_len(const char **s, size_t size)
+{
+    int i;
+    size_t max = 0;
+    for (i = 0; i < size; ++i)
+        if (max < strlen(s[i]))
+            max = strlen(s[i]);
+    return max;
+}
 
 int main(int argc, char **argv)
 {
-    const char *c1 = "hello/world-4.2.1a_beta100_pre200-r300";
-    const char *c2 = "hello/world-4.2.1ab_beta100_pre200-r300";
-    const char *c3 = "world-4.2.1a_-r300";
-    const char *c4 = "hello/world-4.10";
-    const char *c5 = "hello/world";
-    const char *c7 = "hello/world-4.10a";
-    const char *c8 = "hello/world-4";
-    const char *c9 = "hello-world/";
-    const char *c10 = "/hello-world";
+    CPV *cpv;
+    int versioned = 1;
 
-    CPV *cpv1 = cpv_alloc(c1, 1);
-    CPV *cpv2 = cpv_alloc(c2, 1);
-    CPV *cpv3 = cpv_alloc(c3, 1);
-    CPV *cpv4 = cpv_alloc(c4, 1);
-    CPV *cpv5 = cpv_alloc(c5, 1);
-    CPV *cpv6 = cpv_alloc(c5, 0);
-    CPV *cpv7 = cpv_alloc(c7, 1);
-    CPV *cpv8 = cpv_alloc(c8, 1);
-    CPV *cpv9 = cpv_alloc(c9, 0);
-    CPV *cpv10 = cpv_alloc(c10, 0);
+    if (argc == 2) {
+        printf("%s ", argv[1]);
+        cpv = cpv_alloc(argv[1], versioned);
+        if (cpv)
+            printf("<--- valid\n");
+        else
+            printf("<--- invalid\n");
+        cpv_print(cpv);
+        cpv_free(cpv);
+        return 0;
+    }
+    
+    int i, len, width;
+    len = sizeof(valid_cpv_vers_str) / sizeof(valid_cpv_vers_str[0]);
+    width = max_len(valid_cpv_vers_str, len);
+    for (i = 0; i < len; ++i) {
+        cpv = cpv_alloc(valid_cpv_vers_str[i], versioned);
+        printf("%-*s ", width, valid_cpv_vers_str[i]);
+        assert(cpv != NULL && "invalid cpv! should be valid");
+        printf("<--- valid\n");
+        cpv_free(cpv);
+    }
 
-    cpv_print(cpv1);
-    printf("***\n");
-    cpv_print(cpv2);
-    printf("***\n");
-    cpv_print(cpv3);
-    printf("***\n");
-    cpv_print(cpv4);
-    printf("***\n");
-    cpv_print(cpv5);
-    printf("***\n");
-    cpv_print(cpv6);
-    printf("***\n");
-    cpv_print(cpv7);
-    printf("***\n");
-    cpv_print(cpv8);
-    printf("***\n");
-    cpv_print(cpv9);
-    cpv_print(cpv10);
-
-    cpv_free(cpv1);
-    cpv_free(cpv2);
-    cpv_free(cpv3);
-    cpv_free(cpv4);
-    cpv_free(cpv5);
-    cpv_free(cpv6);
-    cpv_free(cpv7);
-    cpv_free(cpv8);
-    cpv_free(cpv9);
-    cpv_free(cpv10);
+    len = sizeof(invalid_cpv_vers_str) / sizeof(invalid_cpv_vers_str[0]);
+    width = max_len(invalid_cpv_vers_str, len);
+    for (i = 0; i < len; ++i) {
+        cpv = cpv_alloc(invalid_cpv_vers_str[i], versioned);
+        printf("%-*s ", width, invalid_cpv_vers_str[i]);
+        assert(cpv == NULL && "valid atom! should be invalid");
+        printf("<--- invalid\n");
+        cpv_free(cpv);
+    }
 }

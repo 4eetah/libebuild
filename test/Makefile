@@ -16,14 +16,14 @@ mytest: $(MYMOD)
 %.o: %.c $(SRC_DIR)/common.h
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-mytest_cpv: $(SRC) mytest_cpv.o
+mytest_cpv: $(OBJ) mytest_cpv.o
 	$(CC) -o $@ $^ $(CFLAGS)
 
-mytest_atom: $(SRC) mytest_atom.o
+mytest_atom: $(OBJ) mytest_atom.o
 	$(CC) -o $@ $^ $(CFLAGS)
 
-mytest_validate: $(SRC) mytest_validate.o
+mytest_validate: $(OBJ) mytest_validate.o
 	$(CC) -o $@ $^ $(CFLAGS)
 
 clean:
-	rm -f $(SRC_DIR)/*.o *.o $(MYMOD)
+	rm -f $(OBJ) *.o $(MYMOD)
