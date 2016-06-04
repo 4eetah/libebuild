@@ -2,7 +2,12 @@ from distutils.core import setup
 from distutils.extension import Extension
 from Cython.Build import cythonize
 
+libebuild_modules = [
+    Extension("cpv", ["cython_ext/cpv.pyx", "atom.c", "validate.c"]),
+    Extension("atom", ["cython_ext/atom.pyx", "validate.c"]),
+]
+
 setup(
-    ext_modules = cythonize([Extension("cpv", ["cython_ext/cpv.pyx", "atom.c", "validate.c"])])
-    #ext_modules = cythonize([Extension("atom", ["cython_ext/cpv.pyx"])])
+    name = "libebuild",
+    ext_modules = cythonize(libebuild_modules),
 )

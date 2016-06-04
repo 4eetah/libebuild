@@ -64,9 +64,7 @@ ATOM *atom_alloc(const char* atom_string)
     ret->USE_DEPS = realloc(ret->USE_DEPS, sizeof(char*) * (id + 1));
     ret->USE_DEPS[id++] = NULL;
 
-    ret->pfx_op = ret->sfx_op = ret->block_op = ATOM_OP_NONE;
-    switch (atom_string[0]) {
-    case '!':
+    if (atom_string[0] == '!') {
         ++atom_string;
         --atom_string_len;
         if (atom_string[0] == '!') {
@@ -75,6 +73,10 @@ ATOM *atom_alloc(const char* atom_string)
             ret->block_op = ATOM_OP_BLOCK_HARD;
         } else
             ret->block_op = ATOM_OP_BLOCK;
+    } else
+        ret->block_op = ATOM_OP_NONE;
+
+    switch (atom_string[0]) {
     case '>':
         ++atom_string;
         --atom_string_len;
@@ -104,6 +106,9 @@ ATOM *atom_alloc(const char* atom_string)
         ++atom_string;
         --atom_string_len;
         ret->pfx_op = ATOM_OP_PV_EQUAL;
+        break;
+    default:
+        ret->pfx_op = ATOM_OP_NONE;
         break;
     }
     strcpy(ret->CATEGORY, atom_string);
@@ -165,7 +170,8 @@ ATOM *atom_alloc(const char* atom_string)
         ret->sfx_op = ATOM_OP_STAR;
         *end_ptr = '\0';
         end_ptr--;
-    }
+    } else
+        ret->sfx_op = ATOM_OP_NONE;
     
     // category
     ptr = ret->CATEGORY;
