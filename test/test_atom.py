@@ -58,6 +58,12 @@ valid_atoms = [
 "virtual/ffmpeg:=",
 "virtual/ffmpeg:0=",
 "virtual/ffmpeg:*",
+
+# blockers for versioned/unversioned atoms
+"!!=hello/world-4.10",
+"!=hello/world-4.10",
+"!hello/world",
+"!!hello/world",
 ]
 
 invalid_atoms = [
@@ -129,12 +135,20 @@ invalid_atoms = [
 
 "virtual/ffmpeg:0/53*",
 "virtual/ffmpeg:0*",
+
+# blockers for versioned/unversioned atoms
+"!!hello/world-4.10",
+"!hello/world-4.10",
+"!=hello/world",
+"!!=hello/world",
 ]
 
 class ParsingTest(TestCase):
     def test_random_batch(self):
         for atom_str in invalid_atoms:
+            print "%50s <-- invalid" % atom_str
             self.assertRaises(InvalidAtom, atom, atom_str)
 
         for atom_str in valid_atoms:
+            print "%50s < -- valid" % atom_str
             self.assertIsInstance(atom(atom_str), atom)

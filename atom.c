@@ -112,9 +112,6 @@ ATOM *atom_alloc(const char* atom_string)
         break;
     }
     strcpy(ret->CATEGORY, atom_string);
-    if ((ret->block_op != ATOM_OP_NONE) && (ret->pfx_op == ATOM_OP_NONE))
-        goto atom_error;
-
     end_ptr = ret->CATEGORY + atom_string_len - 2;
 
     // usedeps
@@ -290,4 +287,14 @@ void atom_free(ATOM *atom)
     free(atom->USE_DEPS);
     free(atom->suffixes);
     free(atom);
+}
+
+int atom_cmp(const ATOM *a1, const ATOM *a2)
+{
+}
+
+int atom_cmp_str(const char *a1, const char *a2)
+{
+    ATOM *atom1 = atom_alloc(a1);
+    ATOM *atom2 = atom_alloc(a2);
 }
