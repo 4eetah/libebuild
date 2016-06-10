@@ -109,7 +109,7 @@ int isvalid_version(const char *version);
 int isvalid_usedep(const char *usedep);
 int isvalid_repo(const char *repo);
 int isvalid_slot(const char *slot);
-int getsuffix(const char *suff);
+version_suffixes getsuffix(const char *suff);
 
 #define err(msg) do { perror(msg); exit(1); } while (0)
 
