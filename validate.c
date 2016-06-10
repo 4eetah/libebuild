@@ -107,8 +107,8 @@ version_suffixes getsuffix(const char *suff)
 int version_cmp(const char *v1, const char *v2)
 {
     char *ptr1, *ptr2;
-    long long n1 = strtoll(v1, &ptr1, 10);
-    long long n2 = strtoll(v2, &ptr2, 10);
+    unsigned long long n1 = strtoll(v1, &ptr1, 10);
+    unsigned long long n2 = strtoll(v2, &ptr2, 10);
     if (n1 > n2)
         return 1;
     else if (n1 < n2)

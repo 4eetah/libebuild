@@ -25,5 +25,8 @@ mytest_atom: $(OBJ) mytest_atom.o
 mytest_validate: $(OBJ) mytest_validate.o
 	$(CC) -o $@ $^ $(CFLAGS)
 
+mytest_version_cmp: $(OBJ) mytest_version_cmp.o
+	$(CC) -o $@ $^ $(CFLAGS)
+
 clean:
 	rm -f $(OBJ) *.o $(MYMOD)
