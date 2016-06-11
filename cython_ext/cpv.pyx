@@ -29,3 +29,9 @@ cdef class cpv:
 
     def __str__(self):
         return self.CATEGORY + "/" + self.PF
+
+    def __cmp__(self, cpv other):
+        cdef int ret = ccpv.cpv_cmp(self._cpv, other._cpv)
+        if   (ret < 0): return -1
+        elif (ret > 0): return 1
+        return 0

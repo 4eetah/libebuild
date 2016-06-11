@@ -289,12 +289,34 @@ void atom_free(ATOM *atom)
     free(atom);
 }
 
+// TODO: most likely that's not what we need, review it later
 int atom_cmp(const ATOM *a1, const ATOM *a2)
 {
-}
+    int ret;
+    if (ret = strcmp(a1->CATEGORY, a2->CATEGORY))
+        return ret;
 
-int atom_cmp_str(const char *a1, const char *a2)
-{
-    ATOM *atom1 = atom_alloc(a1);
-    ATOM *atom2 = atom_alloc(a2);
+    if (ret = strcmp(a1->PN, a2->PN))
+        return ret;
+
+    if (a1->pfx_op < a2->pfx_op)
+        return -1;
+    else if (a1->pfx_op > a2->pfx_op)
+        return 1;
+
+    if (ret = version_cmp(a1->PVR, a2->PVR))
+        return ret;
+
+    if (a1->block_op < a2->block_op)
+        return -1;
+    else if (a1->block_op > a2->block_op)
+        return 1;
+
+    if (ret = strcmp(a1->SLOT, a2->SLOT))
+        return ret;
+
+    if (ret = strcmp(a1->SUBSLOT, a2->SUBSLOT))
+        return ret;
+
+    return strcmp(a1->REPO, a2->REPO);
 }

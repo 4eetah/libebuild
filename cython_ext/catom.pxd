@@ -31,3 +31,4 @@ cdef extern from "atom.h":
 
     ATOM *atom_alloc(const char *atom_string)
     void atom_free(ATOM *atom)
+    int atom_cmp(const ATOM *atom1, const ATOM *atom2)

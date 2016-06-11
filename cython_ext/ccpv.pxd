@@ -10,3 +10,4 @@ cdef extern from "cpv.h":
 
     CPV *cpv_alloc(const char *cpv_string, bint versioned)
     void cpv_free(CPV *cpv)
+    int cpv_cmp(const CPV *cpv1, const CPV *cpv2)

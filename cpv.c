@@ -221,3 +221,16 @@ void cpv_free(CPV *cpv)
     free(cpv->suffixes);
     free(cpv);
 }
+
+/*
+ * NOTE: unversioned cpv implicitly gets 0 version
+ */
+int cpv_cmp(const CPV *c1, const CPV *c2)
+{
+    int ret;
+    if (ret = strcmp(c1->CATEGORY, c2->CATEGORY))
+        return ret;
+    if (ret = strcmp(c1->PN, c2->PN))
+        return ret;
+    return version_cmp(c1->PVR, c2->PVR);
+}

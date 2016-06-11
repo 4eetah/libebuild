@@ -9,8 +9,8 @@ from unittest import TestCase
 from error import InvalidCPV
 from cpv import cpv
 
-class ParsingTest(TestCase):
-    def test_random_batch(self):
+class MiscTest(TestCase):
+    def test_parse_batch(self):
         self.assertRaises(InvalidCPV, cpv, "hello/world-4-10")
         self.assertRaises(InvalidCPV, cpv, "hello/world-4.")
         self.assertRaises(InvalidCPV, cpv, "hello/world-r10")
@@ -21,3 +21,11 @@ class ParsingTest(TestCase):
         self.assertRaises(InvalidCPV, cpv, "hello/world", versioned=True)
         self.assertRaises(TypeError, cpv, "hello/world-4.10", keyword=True)
         self.assertIsInstance(cpv("sys-apps/portage-2.1a_alpha100_pre_p10-r100"), cpv)
+
+    def test_compare(self):
+        self.assertEqual(cpv("hello/world-4.10"), cpv("hello/world-4.10"))
+        self.assertEqual(cpv("hello/world-4.0010"), cpv("hello/world-4.001"))
+        self.assertLess(cpv("allo/world-4.10"), cpv("hello/world-4.10"))
+        self.assertLess(cpv("hello/world-4.8"), cpv("hello/world-4.10"))
+        self.assertGreater(cpv("hello/xorld-4.8"), cpv("hello/world-4.10"))
+        self.assertGreater(cpv("hello/world-4.10"), cpv("hello/world-4.8"))

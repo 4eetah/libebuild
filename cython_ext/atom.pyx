@@ -51,3 +51,9 @@ cdef class atom:
 
     def __str__(self):
         return self.atom_str
+
+    def __cmp__(self, atom other):
+        cdef int ret = catom.atom_cmp(self._atom, other._atom)
+        if   (ret < 0): return -1
+        elif (ret > 0): return 1
+        return 0

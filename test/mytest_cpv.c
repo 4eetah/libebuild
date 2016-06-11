@@ -1,5 +1,6 @@
 #include "common.h"
 #include <assert.h>
+#include <getopt.h>
 
 const char *valid_cpv_vers_str[] = {
 "hello/world-4.2.1a_beta100_pre200-r300",
@@ -26,14 +27,36 @@ size_t max_len(const char **s, size_t size)
     return max;
 }
 
+static int optret;
+static struct option cpv_long_opts[] = {
+    {"versioned", no_argument, &optret, 'v'},
+    {"unversioned", no_argument, &optret, 'u'},
+    {"help", no_argument, &optret, 'h'},
+    {0, 0, 0, 0}
+};
+
 int main(int argc, char **argv)
 {
     CPV *cpv;
     int versioned = 1;
+    int c, index;
+    c = getopt_long(argc, argv, "", cpv_long_opts, &index);
 
-    if (argc == 2) {
-        printf("%s ", argv[1]);
-        cpv = cpv_alloc(argv[1], versioned);
+    if (!c || argc == 2) {
+        switch (optret) {
+        case 'v':
+            versioned = 1;
+            break;
+        case 'u':
+            versioned = 0;
+            break;
+        case 'h':
+        case '?':
+            printf("Usage: ./mytest_cpv [--versioned | --unversioned] [cpv]\n");
+            exit(1);
+        }
+        printf("%s ", argv[optind]);
+        cpv = cpv_alloc(argv[optind], versioned);
         if (cpv)
             printf("<--- valid\n");
         else
