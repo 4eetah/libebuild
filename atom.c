@@ -281,6 +281,20 @@ atom_error:
     return NULL;
 }
 
+ATOM *atom_alloc_eapi(const char* atom_string, int eapi)
+{
+    ATOM *ret = atom_alloc(atom_string);
+    if (!ret)
+        return NULL;
+
+    if (!isvalid_eapi_reqs(ret, eapi)) {
+        atom_free(ret);
+        return NULL;
+    }
+
+    return ret;
+}
+
 void atom_free(ATOM *atom)
 {
     if (!atom) return;

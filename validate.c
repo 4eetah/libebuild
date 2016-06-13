@@ -1,5 +1,27 @@
 #include "common.h"
 
+int isvalid_eapi_reqs(const ATOM *atom, int eapi)
+{
+    if (!VALID_EAPI(eapi))
+        return 0;
+
+    if ((atom->block_op == ATOM_OP_BLOCK_HARD && eapi < 2)
+        || (*atom->SLOT && eapi == 0)
+        || (*atom->SLOT == '*' && eapi < 5)
+        || (strchr(atom->SLOT, '=') && eapi < 5)
+        || (*atom->SUBSLOT && eapi < 5)
+        || (strchr(atom->SUBSLOT, '=') && eapi < 5)
+        || (*atom->USE_DEPS && eapi < 2))
+        return 0;
+
+    int i;
+    for (i = 0; atom->USE_DEPS[i]; ++i)
+        if (strchr(atom->USE_DEPS[i], '(') && eapi < 4)
+            return 0;
+
+    return 1;
+}
+
 int isvalid_version(const char *ptr)
 {
     int tmp;
@@ -102,10 +124,12 @@ version_suffixes getsuffix(const char *suff)
 
 /*
  * pms version comparison logic
- * NOTE: expects previously validated version
  */
-int version_cmp(const char *v1, const char *v2)
+cmp_code version_cmp(const char *v1, const char *v2)
 {
+    if (!isvalid_version(v1) || !isvalid_version(v2))
+        return ERROR;
+
     char *ptr1, *ptr2;
     unsigned long long n1 = strtoll(v1, &ptr1, 10);
     unsigned long long n2 = strtoll(v2, &ptr2, 10);

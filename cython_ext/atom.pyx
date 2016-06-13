@@ -20,10 +20,12 @@ cdef class atom:
     cdef readonly char *block_op
     cdef readonly tuple USE_DEPS
 
-    def __cinit__(self, const char *atom_string):
+    def __cinit__(self, const char *atom_string, int eapi=6):
         self._atom = catom.atom_alloc(atom_string)
         if self._atom is NULL:
             raise InvalidAtom("parse error, invalid input atom string")
+        if not catom.isvalid_eapi_reqs(self._atom, eapi):
+            raise InvalidAtom("eapi constraints validation failed")
         self.atom_str = <bytes>atom_string
         self.P = self._atom.P
         self.PN = self._atom.PN

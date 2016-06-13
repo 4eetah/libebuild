@@ -41,6 +41,7 @@
 #define USEDEP_SUF(c) ((c) == '=' || (c) == '?')
 
 #define SLOT_OPERATOR(c) ((c) == '*' || (c) == '=')
+#define VALID_EAPI(eapi) ((eapi) >= 0 && (eapi) <= 6)
 
 extern const char * const version_suffixes_str[6];
 extern const char * const atom_op_str[10];
@@ -104,18 +105,22 @@ cmp_code cpv_cmp(const CPV *cpv1, const CPV *cpv2);
 cmp_code cpv_cmp_str(const char *s1, const char *s2);
 
 ATOM *atom_alloc(const char *atom_string);
+ATOM *atom_alloc_eapi(const char *atom_string, int eapi);
 void atom_free(ATOM *atom);
 void atom_print(const ATOM *atom);
 cmp_code atom_cmp(const ATOM *atom1, const ATOM *atom2);
 cmp_code atom_cmp_str(const char *s1, const char *s2);
+int atom_intersect(const ATOM *atom1, const ATOM *atom2);
+int atom_intersect_str(const char *s1, const char *s2);
 /***/
 
+int isvalid_eapi_reqs(const ATOM *atom, int eapi);
 int isvalid_version(const char *version);
 int isvalid_usedep(const char *usedep);
 int isvalid_repo(const char *repo);
 int isvalid_slot(const char *slot);
 version_suffixes getsuffix(const char *suff);
-int version_cmp(const char *v1, const char *v2);
+cmp_code version_cmp(const char *v1, const char *v2);
 
 #define err(msg) do { perror(msg); exit(1); } while (0)
 

@@ -37,6 +37,8 @@ cdef extern from "atom.h":
         atom_op block_op
 
     ATOM *atom_alloc(const char *atom_string)
+    ATOM *atom_alloc_eapi(const char *atom_string, int eapi)
     void atom_free(ATOM *atom)
     cmp_code atom_cmp(const ATOM *atom1, const ATOM *atom2)
     cmp_code atom_cmp_str(const char *s1, const char *s2)
+    int isvalid_eapi_reqs(const ATOM *atom, int eapi)
