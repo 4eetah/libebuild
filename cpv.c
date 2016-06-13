@@ -225,12 +225,37 @@ void cpv_free(CPV *cpv)
 /*
  * NOTE: unversioned cpv implicitly gets 0 version
  */
-int cpv_cmp(const CPV *c1, const CPV *c2)
+cmp_code cpv_cmp(const CPV *c1, const CPV *c2)
 {
-    int ret;
-    if (ret = strcmp(c1->CATEGORY, c2->CATEGORY))
-        return ret;
-    if (ret = strcmp(c1->PN, c2->PN))
-        return ret;
+    if (!c1 || !c2)
+        return ERROR;
+
+    if (strcmp(c1->CATEGORY, c2->CATEGORY) ||
+        strcmp(c1->PN, c2->PN))
+        return NOT_EQUAL;
+
     return version_cmp(c1->PVR, c2->PVR);
+}
+
+cmp_code cpv_cmp_str(const char *s1, const char *s2)
+{
+    cmp_code ret;
+    char *ptr;
+    CPV *c1, *c2;
+    if (!(c1 = cpv_alloc(s1, 1)))
+        c1 = cpv_alloc(s1, 0);
+    if (!c1)
+        return ERROR;
+
+    if (!(c2 = cpv_alloc(s2, 1)))
+        c2 = cpv_alloc(s2, 0);
+    if (!c2)
+        goto cpv_error;
+
+    ret = cpv_cmp(c1, c2);
+
+    cpv_free(c2);
+cpv_error:
+    cpv_free(c1);
+    return ret;
 }

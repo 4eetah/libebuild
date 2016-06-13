@@ -1,3 +1,2 @@
-add cpv, atom comparison functions to the interface
 maybe replace version_cmp in cpv_cmp and atom_cmp as we already have components parsed
 add cpv, atom parsing changes corresponding to different eapis

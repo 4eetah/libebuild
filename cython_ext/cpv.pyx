@@ -30,8 +30,17 @@ cdef class cpv:
     def __str__(self):
         return self.CATEGORY + "/" + self.PF
 
-    def __cmp__(self, cpv other):
-        cdef int ret = ccpv.cpv_cmp(self._cpv, other._cpv)
-        if   (ret < 0): return -1
-        elif (ret > 0): return 1
-        return 0
+    def __richcmp__(cpv self, cpv other, int op):
+        cdef ccpv.cmp_code ret = ccpv.cpv_cmp(self._cpv, other._cpv)
+        if   op == 0:
+            return ret == ccpv.OLDER
+        elif op == 1:
+            return ret == ccpv.OLDER or ret == ccpv.EQUAL
+        elif op == 2:
+            return ret == ccpv.EQUAL
+        elif op == 3:
+            return ret == ccpv.NOT_EQUAL
+        elif op == 4:
+            return ret == ccpv.NEWER
+        elif op == 5:
+            return ret == ccpv.NEWER or ret == ccpv.EQUAL

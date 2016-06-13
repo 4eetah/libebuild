@@ -45,6 +45,7 @@
 extern const char * const version_suffixes_str[6];
 extern const char * const atom_op_str[10];
 
+typedef enum { OLDER=-1, EQUAL, NEWER, NOT_EQUAL, ERROR } cmp_code;
 typedef enum { SUF_ALPHA=0, SUF_BETA, SUF_PRE, SUF_RC, SUF_P, SUF_NORM } version_suffixes;
 typedef enum {
     /*    */ ATOM_OP_NONE = 0,
@@ -99,10 +100,14 @@ typedef struct {
 CPV *cpv_alloc(const char *cpv_string, int versioned);
 void cpv_free(CPV *cpv);
 void cpv_print(const CPV *cpv);
+cmp_code cpv_cmp(const CPV *cpv1, const CPV *cpv2);
+cmp_code cpv_cmp_str(const char *s1, const char *s2);
 
 ATOM *atom_alloc(const char *atom_string);
 void atom_free(ATOM *atom);
 void atom_print(const ATOM *atom);
+cmp_code atom_cmp(const ATOM *atom1, const ATOM *atom2);
+cmp_code atom_cmp_str(const char *s1, const char *s2);
 /***/
 
 int isvalid_version(const char *version);
@@ -110,6 +115,7 @@ int isvalid_usedep(const char *usedep);
 int isvalid_repo(const char *repo);
 int isvalid_slot(const char *slot);
 version_suffixes getsuffix(const char *suff);
+int version_cmp(const char *v1, const char *v2);
 
 #define err(msg) do { perror(msg); exit(1); } while (0)
 

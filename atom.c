@@ -289,34 +289,69 @@ void atom_free(ATOM *atom)
     free(atom);
 }
 
-// TODO: most likely that's not what we need, review it later
-int atom_cmp(const ATOM *a1, const ATOM *a2)
+/*
+ * NOTE: unversioned atom implicitly gets 0 version
+ */
+cmp_code atom_cmp(const ATOM *a1, const ATOM *a2)
 {
-    int ret;
-    if (ret = strcmp(a1->CATEGORY, a2->CATEGORY))
-        return ret;
+    if (!a1 || !a2)
+        return ERROR;
 
-    if (ret = strcmp(a1->PN, a2->PN))
-        return ret;
+    if (strcmp(a1->CATEGORY, a2->CATEGORY)
+        || strcmp(a1->PN, a2->PN)
+        || strcmp(a1->SLOT, a2->SLOT)
+        || strcmp(a1->SUBSLOT, a2->SUBSLOT)
+        || strcmp(a1->REPO, a2->REPO))
+        return NOT_EQUAL;
+    
+    int i;
+    for (i = 0; a1->USE_DEPS[i] && a2->USE_DEPS[i]; ++i)
+        if (strcmp(a1->USE_DEPS[i], a2->USE_DEPS[i]))
+            return NOT_EQUAL;
+    if (a1->USE_DEPS[i] || a2->USE_DEPS[i])
+        return NOT_EQUAL;
+    
+    // take globs atom postfixes into account
+    int vcmp;
+    if (a1->sfx_op == ATOM_OP_STAR || a2->sfx_op == ATOM_OP_STAR) {
+        int len1, len2;
+        len1 = strlen(a1->PVR);
+        len2 = strlen(a2->PVR);
+        
+        if (len1 < len2 && a1->sfx_op == ATOM_OP_STAR) {
+            char glob_v2[len1 + 1];
+            strncpy(glob_v2, a2->PVR, len1);
+            glob_v2[len1] = '\0';
+            vcmp = version_cmp(a1->PVR, glob_v2);
+        } else if (len2 < len1 && a2->sfx_op == ATOM_OP_STAR) {
+            char glob_v1[len2 + 1];
+            strncpy(glob_v1, a1->PVR, len2);
+            glob_v1[len2] = '\0';
+            vcmp = version_cmp(glob_v1, a2->PVR);
+        } else
+            vcmp = version_cmp(a1->PVR, a2->PVR);
+    } else
+        vcmp = version_cmp(a1->PVR, a2->PVR);
+    
+    return vcmp;
+}
 
-    if (a1->pfx_op < a2->pfx_op)
-        return -1;
-    else if (a1->pfx_op > a2->pfx_op)
-        return 1;
+cmp_code atom_cmp_str(const char *s1, const char *s2)
+{
+    cmp_code ret;
+    char *ptr;
+    ATOM *a1, *a2;
 
-    if (ret = version_cmp(a1->PVR, a2->PVR))
-        return ret;
+    if (!(a1 = atom_alloc(s1)))
+        return ERROR;
 
-    if (a1->block_op < a2->block_op)
-        return -1;
-    else if (a1->block_op > a2->block_op)
-        return 1;
+    if (!(a2 = atom_alloc(s2)))
+        goto atom_error;
 
-    if (ret = strcmp(a1->SLOT, a2->SLOT))
-        return ret;
+    ret = atom_cmp(a1, a2);
 
-    if (ret = strcmp(a1->SUBSLOT, a2->SUBSLOT))
-        return ret;
-
-    return strcmp(a1->REPO, a2->REPO);
+    atom_free(a2);
+atom_error:
+    atom_free(a1);
+    return ret;
 }

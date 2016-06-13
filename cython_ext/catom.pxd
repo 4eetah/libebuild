@@ -2,6 +2,13 @@ cdef extern from "atom.h":
 
     const char * const atom_op_str[]
 
+    ctypedef enum cmp_code:
+        OLDER = -1
+        EQUAL
+        NEWER
+        NOT_EQUAL
+        ERROR
+
     ctypedef enum atom_op:
         ATOM_OP_NONE = 0
         ATOM_OP_NEWER
@@ -31,4 +38,5 @@ cdef extern from "atom.h":
 
     ATOM *atom_alloc(const char *atom_string)
     void atom_free(ATOM *atom)
-    int atom_cmp(const ATOM *atom1, const ATOM *atom2)
+    cmp_code atom_cmp(const ATOM *atom1, const ATOM *atom2)
+    cmp_code atom_cmp_str(const char *s1, const char *s2)

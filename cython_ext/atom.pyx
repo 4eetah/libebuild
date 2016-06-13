@@ -3,7 +3,6 @@ from error import InvalidAtom
 
 cdef class atom:
     cdef catom.ATOM *_atom
-    cdef catom.atom_op atom_op
     cdef bytes atom_str
 
     cdef readonly char *P
@@ -52,8 +51,17 @@ cdef class atom:
     def __str__(self):
         return self.atom_str
 
-    def __cmp__(self, atom other):
-        cdef int ret = catom.atom_cmp(self._atom, other._atom)
-        if   (ret < 0): return -1
-        elif (ret > 0): return 1
-        return 0
+    def __richcmp__(atom self, atom other, int op):
+        cdef catom.cmp_code ret = catom.atom_cmp(self._atom, other._atom)
+        if   op == 0:
+            return ret == catom.OLDER
+        elif op == 1:
+            return ret == catom.OLDER or ret == catom.EQUAL
+        elif op == 2:
+            return ret == catom.EQUAL
+        elif op == 3:
+            return ret == catom.NOT_EQUAL
+        elif op == 4:
+            return ret == catom.NEWER
+        elif op == 5:
+            return ret == catom.NEWER or ret == catom.EQUAL
