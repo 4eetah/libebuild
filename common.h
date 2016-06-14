@@ -121,6 +121,7 @@ int isvalid_repo(const char *repo);
 int isvalid_slot(const char *slot);
 version_suffixes getsuffix(const char *suff);
 cmp_code version_cmp(const char *v1, const char *v2);
+int version_match(const char *v1, const char *v2, atom_op operation);
 
 #define err(msg) do { perror(msg); exit(1); } while (0)
 
