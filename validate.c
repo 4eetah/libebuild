@@ -7,6 +7,7 @@ int isvalid_eapi_reqs(const ATOM *atom, int eapi)
 
     if ((atom->block_op == ATOM_OP_BLOCK_HARD && eapi < 2)
         || (*atom->SLOT && eapi == 0)
+        || (*atom->REPO && eapi < 2)
         || (*atom->SLOT == '*' && eapi < 5)
         || (strchr(atom->SLOT, '=') && eapi < 5)
         || (*atom->SUBSLOT && eapi < 5)
