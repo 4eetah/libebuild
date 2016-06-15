@@ -511,8 +511,14 @@ int atom_intersect(const ATOM *a1, const ATOM *a2)
             } else if (other->suffixes[0].suffix != SUF_NORM)
                 return 0;
 
-            if (other->letter)
-                return 0;
+            // only can handle cases like =c/p-4.1a* >=c/p-4.1a_p1 here,
+            // otherwise can't do bigger
+            if (other->letter) {
+                if (ranged->suffixes[0].suffix == SUF_P)
+                    return !strncmp(v1, v2, strlen(v2));
+                else
+                    return 0;
+            }
 
             // can do bigger in case only last numeric component
             // of glob version doesn't match
