@@ -53,6 +53,9 @@ cdef class atom:
     def __str__(self):
         return self.atom_str
 
+    def __repr__(self):
+        return '<%s %s @#%x>' % (self.__class__.__name__, self.atom_str, id(self))
+
     def __richcmp__(atom self, atom other, int op):
         cdef catom.cmp_code ret = catom.atom_cmp(self._atom, other._atom)
         if   op == 0:
@@ -67,3 +70,6 @@ cdef class atom:
             return ret == catom.NEWER
         elif op == 5:
             return ret == catom.NEWER or ret == catom.EQUAL
+
+    def intersects(atom self, atom other):
+        return catom.atom_intersect(self._atom, other._atom) > 0

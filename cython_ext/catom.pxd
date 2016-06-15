@@ -41,4 +41,6 @@ cdef extern from "atom.h":
     void atom_free(ATOM *atom)
     cmp_code atom_cmp(const ATOM *atom1, const ATOM *atom2)
     cmp_code atom_cmp_str(const char *s1, const char *s2)
+    int atom_intersect(const ATOM *atom1, const ATOM *atom2);
+    int atom_intersect_str(const char *s1, const char *s2);
     int isvalid_eapi_reqs(const ATOM *atom, int eapi)
