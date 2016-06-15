@@ -112,6 +112,9 @@ cmp_code atom_cmp(const ATOM *atom1, const ATOM *atom2);
 cmp_code atom_cmp_str(const char *s1, const char *s2);
 int atom_intersect(const ATOM *atom1, const ATOM *atom2);
 int atom_intersect_str(const char *s1, const char *s2);
+
+cmp_code version_cmp(const char *v1, const char *v2);
+int version_match(const char *v1, const char *v2, atom_op operation);
 /***/
 
 int isvalid_eapi_reqs(const ATOM *atom, int eapi);
@@ -120,8 +123,6 @@ int isvalid_usedep(const char *usedep);
 int isvalid_repo(const char *repo);
 int isvalid_slot(const char *slot);
 version_suffixes getsuffix(const char *suff);
-cmp_code version_cmp(const char *v1, const char *v2);
-int version_match(const char *v1, const char *v2, atom_op operation);
 
 #define err(msg) do { perror(msg); exit(1); } while (0)
 

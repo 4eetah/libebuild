@@ -300,6 +300,7 @@ void atom_free(ATOM *atom)
 
 /*
  * NOTE: unversioned atom implicitly gets 0 version
+ * TODO: maybe this should be stronger?
  */
 cmp_code atom_cmp(const ATOM *a1, const ATOM *a2)
 {
@@ -314,24 +315,26 @@ cmp_code atom_cmp(const ATOM *a1, const ATOM *a2)
         return NOT_EQUAL;
     
     // take atom [*] and [~] into account
-    int vcmp;
+    const char *v1, *v2;
+    if (a1->pfx_op == ATOM_OP_PV_EQUAL || a2->pfx_op == ATOM_OP_PV_EQUAL) {
+        v1 = a1->PV;
+        v2 = a2->PV;
+    } else {
+        v1 = a1->PVR;
+        v2 = a2->PVR;
+    }
+
     if (a1->sfx_op == ATOM_OP_STAR || a2->sfx_op == ATOM_OP_STAR) {
         int len1, len2;
-        len1 = strlen(a1->PVR);
-        len2 = strlen(a2->PVR);
-        
+        len1 = strlen(v1);
+        len2 = strlen(v2);
+
         if (len1 < len2 && a1->sfx_op == ATOM_OP_STAR)
-            vcmp = strncmp(a1->PVR, a2->PVR, len1);
+            return strncmp(v1, v2, len1);
         else if (len2 < len1 && a2->sfx_op == ATOM_OP_STAR)
-            vcmp = strncmp(a1->PVR, a2->PVR, len2);
-        else
-            vcmp = version_cmp(a1->PVR, a2->PVR);
-    } else if (a1->pfx_op == ATOM_OP_PV_EQUAL || a2->pfx_op == ATOM_OP_PV_EQUAL) {
-        vcmp = version_cmp(a1->PV, a2->PV);
-    } else
-        vcmp = version_cmp(a1->PVR, a2->PVR);
-    
-    return vcmp;
+            return strncmp(v1, v2, len2);
+    }
+    return version_cmp(v1, v2);
 }
 
 cmp_code atom_cmp_str(const char *s1, const char *s2)
@@ -395,6 +398,17 @@ int atom_intersect(const ATOM *a1, const ATOM *a2)
 #define OLDER_OP(a) ((a)->pfx_op == ATOM_OP_OLDER || \
                      (a)->pfx_op == ATOM_OP_OLDER_EQUAL)
 
+    /*
+     * [>|>=] [>|>=] or [<|<=] [<|<=]
+     * [~] [~]
+     * [*] [*]
+     * [~] [*]   or [*] [~]
+     * [=] [any] or [any] [=]
+     * [>|>=] [<|<=] or [<|<=] [>|>=]
+     * [>|>=|<|<=] [~] or [~] [>|>=|<|<=]
+     * [>|>=|<|<=] [*] or [*] [>|>=|<|<=]
+     **/
+
     // both have the same direction
     if ((NEWER_OP(a1) && NEWER_OP(a2)) ||
         (OLDER_OP(a1) && OLDER_OP(a2)))
@@ -408,14 +422,6 @@ int atom_intersect(const ATOM *a1, const ATOM *a2)
         v1 = a1->PVR;
         v2 = a2->PVR;
     }
-    /*
-     * [~] [~]
-     * [*] [*]
-     * [~] [*]   or [*] [~]
-     * [=] [any] or [any] [=]
-     * [>|>=|<|<=] [~] or [~] [>|>=|<|<=]
-     * [>|>=|<|<=] [*] or [*] [>|>=|<|<=]
-     **/
 
     // both version or revision globs
     if (a1->sfx_op == ATOM_OP_STAR && a2->sfx_op == ATOM_OP_STAR)
@@ -511,14 +517,12 @@ int atom_intersect(const ATOM *a1, const ATOM *a2)
             } else if (other->suffixes[0].suffix != SUF_NORM)
                 return 0;
 
-            // only can handle cases like =c/p-4.1a* >=c/p-4.1a_p1 here,
+            // only can handle cases like:
+            // =c/p-4.1a* >=c/p-4.1a_p1,
+            // =c/p-4.1a* >=c/p-4.1a-r10
             // otherwise can't do bigger
-            if (other->letter) {
-                if (ranged->suffixes[0].suffix == SUF_P)
-                    return !strncmp(v1, v2, strlen(v2));
-                else
-                    return 0;
-            }
+            if (other->letter)
+                return !strncmp(v1, v2, strlen(v2));
 
             // can do bigger in case only last numeric component
             // of glob version doesn't match
