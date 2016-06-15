@@ -256,3 +256,51 @@ class TestAtom(TestCase):
         else:
             self.assertRaises(InvalidAtom, kls, '%s[x(+)]' % atom_str)
             self.assertRaises(InvalidAtom, kls, '%s[x(-)]' % atom_str)
+
+    def test_intersects(self):
+        for this, that, result in [
+            ('cat/pkg', 'pkg/cat', False),
+            ('cat/pkg', 'cat/pkg', True),
+            ('cat/pkg:1', 'cat/pkg:1', True),
+            ('cat/pkg:1', 'cat/pkg:2', False),
+            ('cat/pkg:1', 'cat/pkg[foo]', True),
+            ('cat/pkg[foo]', 'cat/pkg[-bar]', True),
+            ('cat/pkg[foo]', 'cat/pkg[-foo]', False),
+            ('>cat/pkg-3', '>cat/pkg-1', True),
+            ('>cat/pkg-3', '<cat/pkg-3', False),
+            ('>=cat/pkg-3', '<cat/pkg-3', False),
+            ('>cat/pkg-2', '=cat/pkg-2*', True),
+            ('<cat/pkg-2_alpha1', '=cat/pkg-2*', True),
+            ('=cat/pkg-2', '=cat/pkg-2', True),
+            ('=cat/pkg-3', '=cat/pkg-2', False),
+            ('=cat/pkg-2', '>cat/pkg-2', False),
+            ('=cat/pkg-2', '>=cat/pkg-2', True),
+            ('~cat/pkg-2', '~cat/pkg-2', True),
+            ('~cat/pkg-2', '~cat/pkg-2.1', False),
+            ('=cat/pkg-2*', '=cat/pkg-2.3*', True),
+            ('>cat/pkg-2.4', '=cat/pkg-2*', True),
+            ('<cat/pkg-2.4', '=cat/pkg-2*', True),
+            ('<cat/pkg-1', '=cat/pkg-2*', False),
+            ('~cat/pkg-2', '>=cat/pkg-2-r1', True),
+            ('~cat/pkg-2', '<=cat/pkg-2', True),
+            ('=cat/pkg-2-r2*', '<=cat/pkg-2-r20', True),
+            ('=cat/pkg-2-r2*', '<cat/pkg-2-r20', True),
+            ('=cat/pkg-2-r2*', '<=cat/pkg-2-r2', True),
+            ('~cat/pkg-2', '<cat/pkg-2', False),
+            ('=cat/pkg-1-r10*', '~cat/pkg-1', True),
+            ('=cat/pkg-1-r1*', '<cat/pkg-1-r1', False),
+            ('=cat/pkg-1*', '>cat/pkg-2', True),
+            ('>=cat/pkg-8.4', '=cat/pkg-8.3.4*', False),
+            ('cat/pkg::gentoo', 'cat/pkg', True),
+            ('cat/pkg::gentoo', 'cat/pkg::foo', False),
+            ('=sys-devel/gcc-4.1.1-r3', '=sys-devel/gcc-3.3*', False),
+            ('=sys-libs/db-4*', '~sys-libs/db-4.3.29', True),
+            ]:
+            this_atom = atom(this)
+            that_atom = atom(that)
+            self.assertEqual(
+                result, this_atom.intersects(that_atom),
+                '%s intersecting %s should be %s' % (this, that, result))
+            self.assertEqual(
+                result, that_atom.intersects(this_atom),
+                '%s intersecting %s should be %s' % (that, this, result))

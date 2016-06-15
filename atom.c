@@ -368,8 +368,8 @@ int atom_intersect(const ATOM *a1, const ATOM *a2)
     if (strcmp(a1->CATEGORY, a2->CATEGORY)
         || strcmp(a1->PN, a2->PN)
         || (*a1->SLOT && *a2->SLOT && strcmp(a1->SLOT, a2->SLOT))
-        || (*a1->SUBSLOT && a2->SUBSLOT && strcmp(a1->SUBSLOT, a2->SUBSLOT))
-        || (*a1->REPO && a2->REPO && strcmp(a1->REPO, a2->REPO)))
+        || (*a1->SUBSLOT && *a2->SUBSLOT && strcmp(a1->SUBSLOT, a2->SUBSLOT))
+        || (*a1->REPO && *a2->REPO && strcmp(a1->REPO, a2->REPO)))
         return 0;
 
     // check if atoms have the same use flag enabled and disabled
