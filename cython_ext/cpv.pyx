@@ -1,7 +1,8 @@
 cimport ccpv
+from cpython.object cimport Py_LT, Py_LE, Py_EQ, Py_GT, Py_GE, Py_NE
 from error import InvalidCPV
 
-cdef class cpv:
+cdef class cpv(object):
     cdef ccpv.CPV *_cpv
 
     cdef readonly char *P
@@ -12,7 +13,7 @@ cdef class cpv:
     cdef readonly char *PF
     cdef readonly char *CATEGORY
 
-    def __cinit__(self, const char *cpv_string, versioned=True):
+    def __init__(self, const char *cpv_string, versioned=True):
         self._cpv = ccpv.cpv_alloc(cpv_string, versioned)
         if self._cpv is NULL:
             raise InvalidCPV("parse error, invalid input cpv string")
@@ -36,15 +37,17 @@ cdef class cpv:
 
     def __richcmp__(cpv self, cpv other, int op):
         cdef ccpv.cmp_code ret = ccpv.cpv_cmp(self._cpv, other._cpv)
-        if   op == 0:
+        if   op == Py_LT:
             return ret == ccpv.OLDER
-        elif op == 1:
+        elif op == Py_LE:
             return ret == ccpv.OLDER or ret == ccpv.EQUAL
-        elif op == 2:
+        elif op == Py_EQ:
             return ret == ccpv.EQUAL
-        elif op == 3:
+        elif op == Py_NE:
             return ret == ccpv.NOT_EQUAL
-        elif op == 4:
+        elif op == Py_GT:
             return ret == ccpv.NEWER
-        elif op == 5:
+        elif op == Py_GE:
             return ret == ccpv.NEWER or ret == ccpv.EQUAL
+        else:
+            assert False
