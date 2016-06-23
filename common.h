@@ -43,6 +43,34 @@
 #define SLOT_OPERATOR(c) ((c) == '*' || (c) == '=')
 #define VALID_EAPI(eapi) ((eapi) >= 0 && (eapi) <= 6)
 
+typedef enum {
+    E_OK=0,
+    E_INVALID_CATEGORY,
+    E_INVALID_CATEGORY_FIRST_CHAR,
+    E_INVALID_PN,
+    E_INVALID_PN_FIRST_CHAR,
+    E_INVALID_PN_VERSIONED_SUF,
+    E_INVALID_VERSION,
+    E_INVALID_SLOT,
+    E_INVALID_REPO,
+    E_INVALID_USE_DEP,
+    E_INVALID_EAPI,
+    E_EAPI_LT2_ATOM_BLOCK_HARD,
+    E_EAPI_EQ0_ATOM_SLOT,
+    E_EAPI_LT2_ATOM_REPO,
+    E_EAPI_LT5_ATOM_SLOT_OP_STAR,
+    E_EAPI_LT5_ATOM_SLOT_OP_EQUAL,
+    E_EAPI_LT5_ATOM_SUBSLOT,
+    E_EAPI_LT2_ATOM_USE_DEPS,
+    E_EAPI_LT4_ATOM_USE_DEPS_DEFAULT,
+    E_INVALID_ATOM_OP_COMBO,
+    E_INVALID_ATOM_OP_EMPTY_VER,
+    E_INVALID_ATOM_OP_NONEMPTY_UNVER,
+    E_INVALID_ATOM_OP_STAR_NEQ,
+    E_NOMEM,
+} eerror_t;
+
+extern eerror_t ebuild_errno;
 extern const char * const version_suffixes_str[6];
 extern const char * const atom_op_str[10];
 
@@ -123,7 +151,8 @@ int isvalid_usedep(const char *usedep);
 int isvalid_repo(const char *repo);
 int isvalid_slot(const char *slot);
 version_suffixes getsuffix(const char *suff);
+const char *ebuild_strerror(eerror_t code);
 
-#define err(msg) do { perror(msg); exit(1); } while (0)
+#define set_ebuild_errno(code) ebuild_errno = (code)
 
 #endif // COMMON_H

@@ -1,6 +1,7 @@
 cdef extern from "atom.h":
 
     const char * const atom_op_str[]
+    int ebuild_errno
 
     ctypedef enum cmp_code:
         OLDER = -1
@@ -44,3 +45,4 @@ cdef extern from "atom.h":
     int atom_intersect(const ATOM *atom1, const ATOM *atom2);
     int atom_intersect_str(const char *s1, const char *s2);
     int isvalid_eapi_reqs(const ATOM *atom, int eapi)
+    const char *ebuild_strerror(int code)

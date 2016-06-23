@@ -2,24 +2,36 @@
 
 int isvalid_eapi_reqs(const ATOM *atom, int eapi)
 {
-    if (!VALID_EAPI(eapi))
+    ebuild_errno = E_OK;
+    
+    if (!VALID_EAPI(eapi)) {
+        set_ebuild_errno(E_INVALID_EAPI);
         return 0;
+    }
 
-    if ((atom->block_op == ATOM_OP_BLOCK_HARD && eapi < 2)
-        || (*atom->SLOT && eapi == 0)
-        || (*atom->REPO && eapi < 2)
-        || (*atom->SLOT == '*' && eapi < 5)
-        || (strchr(atom->SLOT, '=') && eapi < 5)
-        || (*atom->SUBSLOT && eapi < 5)
-        || (strchr(atom->SUBSLOT, '=') && eapi < 5)
-        || (*atom->USE_DEPS && eapi < 2))
-        return 0;
+    if (atom->block_op == ATOM_OP_BLOCK_HARD && eapi < 2)
+        set_ebuild_errno(E_EAPI_LT2_ATOM_BLOCK_HARD);
+    else if (*atom->SLOT && eapi == 0)
+        set_ebuild_errno(E_EAPI_EQ0_ATOM_SLOT);
+    else if (*atom->REPO && eapi < 2)
+        set_ebuild_errno(E_EAPI_LT2_ATOM_REPO);
+    else if (*atom->SLOT == '*' && eapi < 5)
+        set_ebuild_errno(E_EAPI_LT5_ATOM_SLOT_OP_STAR);
+    else if ((strchr(atom->SLOT, '=') || strchr(atom->SUBSLOT, '=')) && eapi < 5)
+        set_ebuild_errno(E_EAPI_LT5_ATOM_SLOT_OP_EQUAL);
+    else if (*atom->SUBSLOT && eapi < 5)
+        set_ebuild_errno(E_EAPI_LT5_ATOM_SUBSLOT);
+    else if (*atom->USE_DEPS && eapi < 2)
+        set_ebuild_errno(E_EAPI_LT2_ATOM_USE_DEPS);
 
     int i;
     for (i = 0; atom->USE_DEPS[i]; ++i)
-        if (strchr(atom->USE_DEPS[i], '(') && eapi < 4)
-            return 0;
-
+        if (strchr(atom->USE_DEPS[i], '(') && eapi < 4) {
+            set_ebuild_errno(E_EAPI_LT4_ATOM_USE_DEPS_DEFAULT);
+            break;
+        }
+    if (ebuild_errno)
+        return 0;
     return 1;
 }
 

@@ -1,4 +1,10 @@
 #include "common.h"
+#define cpv_error(cpv_ptr, code) \
+    do { \
+        set_ebuild_errno(code); \
+        cpv_free(cpv_ptr); \
+        return NULL; \
+    } while(0)
 
 void cpv_print(const CPV *cpv)
 {
@@ -29,6 +35,7 @@ static CPV *cpv_alloc_versioned(const char *cpv_string)
     char *ptr, *tmp_ptr, *end_ptr;
     size_t m_len, cpv_len, cpv_string_len;
     int id, sid, sid_len;
+    ebuild_errno = E_OK;
 
     // CPV + P + PF + PVR + (CATEGORY,PN,PV,PR)
     cpv_len = sizeof(CPV);
@@ -37,7 +44,7 @@ static CPV *cpv_alloc_versioned(const char *cpv_string)
 
     ret = malloc(m_len);
     if (ret == NULL)
-        err("Out of memory error\n");
+        cpv_error(ret, E_NOMEM);
     memset(ret, 0, m_len);
 
     ptr = (char*)ret;
@@ -51,15 +58,15 @@ static CPV *cpv_alloc_versioned(const char *cpv_string)
     ptr = ret->CATEGORY;
     end_ptr = ptr + cpv_string_len - 2;
     if (INVALID_FIRST_CHAR(*ptr))
-        goto cpv_error;
+        cpv_error(ret, E_INVALID_CATEGORY_FIRST_CHAR);
     while (*++ptr != '/')
         if (!VALID_CHAR(*ptr))
-            goto cpv_error;
+            cpv_error(ret, E_INVALID_CATEGORY);
 
     *ptr = '\0';
     ret->PN = ptr + 1;
     if (INVALID_FIRST_CHAR(*(ret->PN)))
-        goto cpv_error;
+        cpv_error(ret, E_INVALID_PN_FIRST_CHAR);
     strcpy(ret->PF, ret->PN);
 
     tmp_ptr = NULL;
@@ -77,7 +84,7 @@ static CPV *cpv_alloc_versioned(const char *cpv_string)
         ptr--;
     }
     if (!isvalid_version(ret->PV))
-        goto cpv_error;
+        cpv_error(ret, E_INVALID_VERSION);
     else {
         strcpy(ret->PVR, ret->PV);
         // revision
@@ -93,10 +100,10 @@ static CPV *cpv_alloc_versioned(const char *cpv_string)
     ptr = ret->PN;
     while (*++ptr)
         if (!VALID_CHAR(*ptr))
-            goto cpv_error;
+            cpv_error(ret, E_INVALID_PN);
         // pkgname shouldn't end with a hyphen followed by a valid version
         else if (ptr[0] == '-' && isdigit(ptr[1]) && isvalid_version(&ptr[1]))
-            goto cpv_error;
+            cpv_error(ret, E_INVALID_PN);
 
     // optional version letter
     if (ptr = strchr(ret->PV, '_')) {
@@ -112,7 +119,7 @@ static CPV *cpv_alloc_versioned(const char *cpv_string)
     id = 0;
     ret->suffixes = realloc(ret->suffixes, sizeof(suffix_ver) * (id + 1));
     if (ret->suffixes == NULL)
-        err("Out of memory error\n");
+        cpv_error(ret, E_NOMEM);
     ret->suffixes[id].suffix = SUF_NORM;
     ret->suffixes[id].val = 0;
 
@@ -133,7 +140,7 @@ static CPV *cpv_alloc_versioned(const char *cpv_string)
         id++;
         ret->suffixes = realloc(ret->suffixes, sizeof(suffix_ver) * (id + 1));
         if (ret->suffixes == NULL)
-            err("Out of memory error\n");
+            cpv_error(ret, E_NOMEM);
         ret->suffixes[id].suffix = SUF_NORM;
         ret->suffixes[id].val = 0;
 
@@ -141,9 +148,6 @@ static CPV *cpv_alloc_versioned(const char *cpv_string)
     }
 
     return ret;
-cpv_error:
-    cpv_free(ret);
-    return NULL;
 }
 
 static CPV *cpv_alloc_unversioned(const char *cpv_string)
@@ -151,6 +155,7 @@ static CPV *cpv_alloc_unversioned(const char *cpv_string)
     CPV *ret;
     char *ptr, *tmp_ptr;
     size_t m_len, cpv_len, cpv_string_len;
+    ebuild_errno = E_OK;
 
     // CPV + PF + (CATEGORY,PN)
     cpv_len = sizeof(CPV);
@@ -159,7 +164,7 @@ static CPV *cpv_alloc_unversioned(const char *cpv_string)
 
     ret = malloc(m_len);
     if (ret == NULL)
-        err("Out of memory error\n");
+        cpv_error(ret, E_NOMEM);
     memset(ret, 0, m_len);
 
     ptr = (char*)ret;
@@ -176,35 +181,32 @@ static CPV *cpv_alloc_unversioned(const char *cpv_string)
 
     // category
     if (INVALID_FIRST_CHAR(*ptr))
-        goto cpv_error;
+        cpv_error(ret, E_INVALID_CATEGORY);
     while (*++ptr != '/')
         if (!VALID_CHAR(*ptr))
-            goto cpv_error;
+            cpv_error(ret, E_INVALID_CATEGORY);
 
     *ptr = '\0';
     ret->PN = ptr + 1;
     if (INVALID_FIRST_CHAR(*(ret->PN)))
-        goto cpv_error;
+        cpv_error(ret, E_INVALID_PN);
     strcpy(ret->PF, ret->PN);
 
     ptr = ret->PN;
     while (*++ptr)
         if (!VALID_CHAR(*ptr))
-            goto cpv_error;
+            cpv_error(ret, E_INVALID_PN);
         // pkgname shouldn't end with a hyphen followed by a valid version
         else if (ptr[0] == '-' && isdigit(ptr[1]) && isvalid_version(&ptr[1]))
-            goto cpv_error;
+            cpv_error(ret, E_INVALID_PN);
 
     ret->suffixes = malloc(sizeof(suffix_ver));
     if (ret->suffixes == NULL)
-        err("Out of memory error\n");
+        cpv_error(ret, E_NOMEM);
     ret->suffixes[0].suffix = SUF_NORM;
     ret->suffixes[0].val = 0;
 
     return ret;
-cpv_error:
-    cpv_free(ret);
-    return NULL;
 }
 
 CPV *cpv_alloc(const char *cpv_string, int versioned)
@@ -242,6 +244,7 @@ cmp_code cpv_cmp_str(const char *s1, const char *s2)
     cmp_code ret;
     char *ptr;
     CPV *c1, *c2;
+
     if (!(c1 = cpv_alloc(s1, 1)))
         c1 = cpv_alloc(s1, 0);
     if (!c1)
@@ -259,3 +262,5 @@ cpv_error:
     cpv_free(c1);
     return ret;
 }
+
+#undef cpv_error

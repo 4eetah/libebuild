@@ -16,7 +16,7 @@ cdef class cpv(object):
     def __init__(self, const char *cpv_string, versioned=True):
         self._cpv = ccpv.cpv_alloc(cpv_string, versioned)
         if self._cpv is NULL:
-            raise InvalidCPV("parse error, invalid input cpv string")
+            raise InvalidCPV(ccpv.ebuild_strerror(ccpv.ebuild_errno))
         self.P = self._cpv.P
         self.PN = self._cpv.PN
         self.PV = self._cpv.PV

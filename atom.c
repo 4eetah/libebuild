@@ -1,4 +1,10 @@
 #include "common.h"
+#define atom_error(atom_ptr, code) \
+    do { \
+        set_ebuild_errno(code); \
+        atom_free(atom_ptr); \
+        return NULL; \
+    } while(0)
 
 void atom_print(const ATOM *atom)
 {
@@ -39,6 +45,7 @@ ATOM *atom_alloc(const char* atom_string)
     char *ptr, *tmp_ptr, *end_ptr;
     size_t m_len, atom_len, atom_string_len;
     int id, sid, sid_len;
+    ebuild_errno = E_OK;
 
     // ATOM + P + PF + PVR + (CATEGORY,PN,PV,PR,SLOT,SUBSLOT,REPO,USE_DEPS)
     atom_len = sizeof(ATOM);
@@ -47,7 +54,7 @@ ATOM *atom_alloc(const char* atom_string)
 
     ret = malloc(m_len);
     if (ret == NULL)
-        err("Out of memory error\n");
+        atom_error(ret, E_NOMEM);
     memset(ret, 0, m_len);
 
     ptr = (char*)ret;
@@ -119,7 +126,7 @@ ATOM *atom_alloc(const char* atom_string)
                   ((tmp_ptr = end_ptr) >= ptr)) {
                 *tmp_ptr = '\0';
                 if (!isvalid_usedep(ptr))
-                    goto atom_error;
+                    atom_error(ret, E_INVALID_USE_DEP);
                 ret->USE_DEPS = realloc(ret->USE_DEPS, sizeof(char*) * (id + 1));
                 ret->USE_DEPS[id - 1] = ptr;
                 ret->USE_DEPS[id] = NULL;
@@ -128,7 +135,7 @@ ATOM *atom_alloc(const char* atom_string)
             }
             end_ptr = ret->USE_DEPS[0] - 2;
         } else
-            goto atom_error;
+            atom_error(ret, E_INVALID_PN);
 
     // repo
     if (ptr = strstr(ret->CATEGORY, "::")) {
@@ -136,7 +143,7 @@ ATOM *atom_alloc(const char* atom_string)
         *ptr = '\0';
         end_ptr = ptr - 1;
         if (!isvalid_repo(ret->REPO))
-            goto atom_error;
+            atom_error(ret, E_INVALID_REPO);
     } else
         ret->REPO = end_ptr + 1;
 
@@ -146,7 +153,7 @@ ATOM *atom_alloc(const char* atom_string)
         *ptr = '\0';
         end_ptr = ptr - 1;
         if (!isvalid_slot(ret->SLOT))
-            goto atom_error;
+            atom_error(ret, E_INVALID_SLOT);
         if (ptr = strchr(ret->SLOT, '/')) {
             ret->SUBSLOT = ptr + 1;
             *ptr = '\0';
@@ -160,7 +167,7 @@ ATOM *atom_alloc(const char* atom_string)
     // match any base version
     if (*end_ptr == '*') {
         if (ret->pfx_op != ATOM_OP_EQUAL)
-            goto atom_error;
+            atom_error(ret, E_INVALID_ATOM_OP_STAR_NEQ);
         ret->sfx_op = ATOM_OP_STAR;
         *end_ptr = '\0';
         end_ptr--;
@@ -170,15 +177,15 @@ ATOM *atom_alloc(const char* atom_string)
     // category
     ptr = ret->CATEGORY;
     if (INVALID_FIRST_CHAR(*ptr))
-        goto atom_error;
+        atom_error(ret, E_INVALID_CATEGORY_FIRST_CHAR);
     while (*++ptr != '/')
         if (!VALID_CHAR(*ptr))
-            goto atom_error;
+           atom_error(ret, E_INVALID_CATEGORY);
 
     *ptr = '\0';
     ret->PN = ptr + 1;
     if (INVALID_FIRST_CHAR(*(ret->PN)))
-        goto atom_error;
+        atom_error(ret, E_INVALID_PN_FIRST_CHAR);
     strcpy(ret->PF, ret->PN);
 
     // version
@@ -196,21 +203,21 @@ ATOM *atom_alloc(const char* atom_string)
     id = 0;
     ret->suffixes = realloc(ret->suffixes, sizeof(suffix_ver) * (id + 1));
     if (ret->suffixes == NULL)
-        err("Out of memory error\n");
+        atom_error(ret, E_NOMEM);
     ret->suffixes[id].suffix = SUF_NORM;
     ret->suffixes[id].val = 0;
 
     if (ptr == ret->PN) {
         if ((ret->pfx_op != ATOM_OP_NONE) || (ret->sfx_op != ATOM_OP_NONE))
-            goto atom_error;
+            atom_error(ret, E_INVALID_ATOM_OP_NONEMPTY_UNVER);
         // set empty version
         ret->P   = end_ptr + 1;
         ret->PV  = end_ptr + 1;
         ret->PVR = end_ptr + 1;
     } else if (ret->pfx_op == ATOM_OP_NONE) {
-        goto atom_error;
+        atom_error(ret, E_INVALID_ATOM_OP_EMPTY_VER);
     } else if (!isvalid_version(ret->PV)) {
-        goto atom_error;
+        atom_error(ret, E_INVALID_VERSION);
     } else {
         // got a valid version along with prefix operator
         strcpy(ret->PVR, ret->PV);
@@ -265,15 +272,12 @@ ATOM *atom_alloc(const char* atom_string)
     ptr = ret->PN;
     while (*++ptr)
         if (!VALID_CHAR(*ptr))
-            goto atom_error;
+            atom_error(ret, E_INVALID_PN);
         // pkgname shouldn't end with a hyphen followed by a valid version
         else if (ptr[0] == '-' && isdigit(ptr[1]) && isvalid_version(&ptr[1]))
-            goto atom_error;
+            atom_error(ret, E_INVALID_PN_VERSIONED_SUF);
 
     return ret;
-atom_error:
-    atom_free(ret);
-    return NULL;
 }
 
 ATOM *atom_alloc_eapi(const char* atom_string, int eapi)
@@ -304,6 +308,8 @@ void atom_free(ATOM *atom)
  */
 cmp_code atom_cmp(const ATOM *a1, const ATOM *a2)
 {
+    ebuild_errno = E_OK;
+
     if (!a1 || !a2)
         return ERROR;
 
@@ -561,3 +567,5 @@ atom_error:
     atom_free(a1);
     return ret;
 }
+
+#undef atom_error

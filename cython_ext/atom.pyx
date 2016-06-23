@@ -22,11 +22,9 @@ cdef class atom(object):
     cdef readonly tuple USE_DEPS
 
     def __init__(self, const char *atom_string, int eapi=6):
-        self._atom = catom.atom_alloc(atom_string)
+        self._atom = catom.atom_alloc_eapi(atom_string, eapi)
         if self._atom is NULL:
-            raise InvalidAtom("parse error, invalid input atom string")
-        if not catom.isvalid_eapi_reqs(self._atom, eapi):
-            raise InvalidAtom("eapi constraints validation failed")
+            raise InvalidAtom(catom.ebuild_strerror(catom.ebuild_errno))
         self.atom_str = <bytes>atom_string
         self.P = self._atom.P
         self.PN = self._atom.PN
@@ -41,7 +39,7 @@ cdef class atom(object):
         self.pfx_op = catom.atom_op_str[<int>self._atom.pfx_op]
         self.sfx_op = catom.atom_op_str[<int>self._atom.sfx_op]
         self.block_op = catom.atom_op_str[<int>self._atom.block_op]
-        cdef list use_deps
+        cdef list use_deps = []
         cdef int i = 0
         while self._atom.USE_DEPS[i] is not NULL:
             use_deps.append(self._atom.USE_DEPS[i])
