@@ -1,9 +1,11 @@
 import os, sys
 builddir = 'build/lib.linux-x86_64-2.7'
+libdir = 'libebuild'
 sep = os.path.sep
 prev = sep.join(os.path.abspath(os.path.curdir).split(sep)[:-1])
 sys.path.append(prev)
 sys.path.append(sep.join([prev,builddir]))
+sys.path.append(sep.join([prev,libdir]))
 
 from unittest import TestCase
 from error import InvalidCPV
@@ -25,7 +27,7 @@ class MiscTest(TestCase):
     def test_compare(self):
         self.assertEqual(cpv("hello/world-4.10"), cpv("hello/world-4.10"))
         self.assertEqual(cpv("hello/world-4.0010"), cpv("hello/world-4.001"))
-        self.assertLess(cpv("allo/world-4.10"), cpv("hello/world-4.10"))
+        self.assertNotEqual(cpv("allo/world-4.10"), cpv("hello/world-4.10"))
         self.assertLess(cpv("hello/world-4.8"), cpv("hello/world-4.10"))
-        self.assertGreater(cpv("hello/xorld-4.8"), cpv("hello/world-4.10"))
+        self.assertNotEqual(cpv("hello/xorld-4.8"), cpv("hello/world-4.10"))
         self.assertGreater(cpv("hello/world-4.10"), cpv("hello/world-4.8"))

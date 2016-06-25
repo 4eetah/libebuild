@@ -15,7 +15,7 @@ const char *ebuild_strerror(eerror_t code)
     case E_INVALID_PN_FIRST_CHAR:
         return "Invalid first char in package name, should be alnum and not start with [-+.]";
     case E_INVALID_PN_VERSIONED_SUF:
-        return "Invalid package name, shouldn't end with valid version";
+        return "Invalid package name, shouldn't end with a valid version";
     case E_INVALID_VERSION:
         return "Invalid version";
     case E_INVALID_SLOT:

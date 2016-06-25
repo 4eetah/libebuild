@@ -220,15 +220,21 @@ ATOM *atom_alloc(const char* atom_string)
         atom_error(ret, E_INVALID_VERSION);
     } else {
         // got a valid version along with prefix operator
-        strcpy(ret->PVR, ret->PV);
         end_ptr = NULL;
 
         // revision
         if (ptr = strchr(ret->PV, '-')) {
-            ptr[0] = '\0';
             ret->PR_int = atoi(&ptr[2]);
+            if (ret->PR_int) {
+                strcpy(ret->PVR, ret->PV);
+                ptr[0] = '\0';
+            } else {
+                ptr[0] = '\0';
+                strcpy(ret->PVR, ret->PV);
+            }
             end_ptr = ptr - 1;
-        }
+        } else
+            strcpy(ret->PVR, ret->PV);
 
         strcpy(ret->P, ret->PN);
         *tmp_ptr = '\0';
@@ -308,8 +314,6 @@ void atom_free(ATOM *atom)
  */
 cmp_code atom_cmp(const ATOM *a1, const ATOM *a2)
 {
-    ebuild_errno = E_OK;
-
     if (!a1 || !a2)
         return ERROR;
 
