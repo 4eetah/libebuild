@@ -55,6 +55,9 @@ cdef class atom(object):
     def __repr__(self):
         return '<%s %s @#%x>' % (self.__class__.__name__, self.atom_str, id(self))
 
+    def __hash__(self):
+        return hash(self.atom_str)
+
     def __richcmp__(atom self, atom other, int op):
         cdef catom.cmp_code ret = catom.atom_cmp(self._atom, other._atom)
         if   op == Py_LT:

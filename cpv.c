@@ -103,7 +103,7 @@ static CPV *cpv_alloc_versioned(const char *cpv_string)
             cpv_error(ret, E_INVALID_PN);
         // pkgname shouldn't end with a hyphen followed by a valid version
         else if (ptr[0] == '-' && isdigit(ptr[1]) && isvalid_version(&ptr[1]))
-            cpv_error(ret, E_INVALID_PN);
+            cpv_error(ret, E_INVALID_PN_VERSIONED_SUF);
 
     // optional version letter
     if (ptr = strchr(ret->PV, '_')) {
@@ -198,7 +198,7 @@ static CPV *cpv_alloc_unversioned(const char *cpv_string)
             cpv_error(ret, E_INVALID_PN);
         // pkgname shouldn't end with a hyphen followed by a valid version
         else if (ptr[0] == '-' && isdigit(ptr[1]) && isvalid_version(&ptr[1]))
-            cpv_error(ret, E_INVALID_PN);
+            cpv_error(ret, E_INVALID_PN_VERSIONED_SUF);
 
     ret->suffixes = malloc(sizeof(suffix_ver));
     if (ret->suffixes == NULL)

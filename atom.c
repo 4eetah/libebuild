@@ -308,8 +308,6 @@ void atom_free(ATOM *atom)
  */
 cmp_code atom_cmp(const ATOM *a1, const ATOM *a2)
 {
-    ebuild_errno = E_OK;
-
     if (!a1 || !a2)
         return ERROR;
 

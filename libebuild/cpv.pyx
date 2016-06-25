@@ -35,6 +35,9 @@ cdef class cpv(object):
         return '<%s %s @#%x>' % (
             self.__class__.__name__, self.CATEGORY + "/" + self.PF, id(self))
 
+    def __hash__(self):
+        return hash(self.CATEGORY + self.PF)
+
     def __richcmp__(cpv self, cpv other, int op):
         cdef ccpv.cmp_code ret = ccpv.cpv_cmp(self._cpv, other._cpv)
         if   op == Py_LT:
