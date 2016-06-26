@@ -15,7 +15,7 @@ void cpv_print(const CPV *cpv)
     printf("P: %s\n", cpv->P);
     printf("PN: %s\n", cpv->PN);
     printf("PV: %s\n", cpv->PV);
-    printf("PR: %d\n", cpv->PR_int);
+    printf("PR: %lld\n", cpv->PR_int);
     printf("PVR: %s\n", cpv->PVR);
     printf("PF: %s\n", cpv->PF);
     printf("CATEGORY: %s\n", cpv->CATEGORY);
@@ -88,7 +88,7 @@ static CPV *cpv_alloc_versioned(const char *cpv_string)
     else {
         // revision
         if (ptr = strchr(ret->PV, '-')) {
-            ret->PR_int = atoi(&ptr[2]);
+            ret->PR_int = atoll(&ptr[2]);
             if (ret->PR_int) {
                 strcpy(ret->PVR, ret->PV);
                 ptr[0] = '\0';

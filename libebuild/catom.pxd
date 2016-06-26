@@ -26,7 +26,7 @@ cdef extern from "atom.h":
         char *P
         char *PN
         char *PV
-        unsigned int PR_int
+        unsigned long long PR_int
         char *PVR
         char *PF
         char *CATEGORY

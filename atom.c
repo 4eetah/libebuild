@@ -15,7 +15,7 @@ void atom_print(const ATOM *atom)
     printf("P: %s\n", atom->P);
     printf("PN: %s\n", atom->PN);
     printf("PV: %s\n", atom->PV);
-    printf("PR: %d\n", atom->PR_int);
+    printf("PR: %lld\n", atom->PR_int);
     printf("PVR: %s\n", atom->PVR);
     printf("PF: %s\n", atom->PF);
     printf("CATEGORY: %s\n", atom->CATEGORY);
@@ -224,7 +224,7 @@ ATOM *atom_alloc(const char* atom_string)
 
         // revision
         if (ptr = strchr(ret->PV, '-')) {
-            ret->PR_int = atoi(&ptr[2]);
+            ret->PR_int = atoll(&ptr[2]);
             if (ret->PR_int) {
                 strcpy(ret->PVR, ret->PV);
                 ptr[0] = '\0';

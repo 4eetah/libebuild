@@ -127,3 +127,33 @@ int version_match(const char *v1, const char *v2, atom_op op)
         return 0;
     }
 }
+
+atom_op atom_op_from_str(const char *op)
+{
+    switch (op[0]) {
+    case '!':
+        ++op;
+        if (op[0] == '!')
+            return ATOM_OP_BLOCK_HARD;
+        else
+            return ATOM_OP_BLOCK;
+    case '>':
+        ++op;
+        if (op[0] == '=')
+            return ATOM_OP_NEWER_EQUAL;
+        else
+            return ATOM_OP_NEWER;
+    case '=':
+        return ATOM_OP_EQUAL;
+    case '<':
+        ++op;
+        if (op[0] == '=')
+            return ATOM_OP_OLDER_EQUAL;
+        else
+            return ATOM_OP_OLDER;
+    case '~':
+        return ATOM_OP_PV_EQUAL;
+    default:
+        return ATOM_OP_NONE;
+    }
+}

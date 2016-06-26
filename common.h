@@ -98,7 +98,7 @@ typedef struct {
     char *P;
     char *PN;
     char *PV;
-    unsigned int PR_int;
+    unsigned long long PR_int;
     char *PVR;
     char *PF;
     char *CATEGORY;
@@ -110,7 +110,7 @@ typedef struct {
     char *P;
     char *PN;
     char *PV;
-    unsigned int PR_int;
+    unsigned long long PR_int;
     char *PVR;
     char *PF;
     char *CATEGORY;
@@ -151,6 +151,7 @@ int isvalid_usedep(const char *usedep);
 int isvalid_repo(const char *repo);
 int isvalid_slot(const char *slot);
 version_suffixes getsuffix(const char *suff);
+atom_op atom_op_from_str(const char *op);
 const char *ebuild_strerror(eerror_t code);
 
 #define set_ebuild_errno(code) ebuild_errno = (code)
