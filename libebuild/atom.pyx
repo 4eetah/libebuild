@@ -123,3 +123,87 @@ cdef class atom(object):
 
     def intersects(atom self, atom other):
         return catom.atom_intersect(self._atom, other._atom) > 0
+
+from libc.string cimport strlen
+
+def catom_init(self, const char *atom_string, negate_vers=False, int eapi=6):
+    cdef catom.ATOM *_atom = catom.atom_alloc_eapi(atom_string, eapi)
+    if _atom is NULL:
+        raise MalformedAtom(atom_string, catom.ebuild_strerror(catom.ebuild_errno))
+
+    sf = object.__setattr__
+
+    sf(self, "category", _atom.CATEGORY)
+    sf(self, "package",  _atom.PN)
+    sf(self, "key", self.category + "/" + self.package)
+    sf(self, "version", _atom.PV if _atom.PV[0] else None)
+    sf(self, "fullver", _atom.PVR if _atom.PVR[0] else None)
+    sf(self, "revision", _atom.PR_int if _atom.PR_int else None)
+    sf(self, "repo_id", _atom.REPO if _atom.REPO[0] else None)
+    if self.fullver:
+        sf(self, "cpvstr", self.key + "-" + self.fullver)
+    else:
+        sf(self, "cpvstr", self.key)
+
+    if _atom.pfx_op != catom.ATOM_OP_NONE:
+        if _atom.sfx_op == catom.ATOM_OP_STAR:
+            sf(self, "op", catom.atom_op_str[<int>_atom.pfx_op] + \
+                           catom.atom_op_str[<int>_atom.sfx_op])
+        else:
+            sf(self, "op", catom.atom_op_str[<int>_atom.pfx_op])
+    else:
+        sf(self, "op", '')
+
+    if _atom.block_op == catom.ATOM_OP_BLOCK:
+        sf(self, "blocks", True)
+        sf(self, "blocks_strongly", False)
+    elif _atom.block_op == catom.ATOM_OP_BLOCK_HARD:
+        sf(self, "blocks", True)
+        sf(self, "blocks_strongly", True)
+    else:
+        sf(self, "blocks", False)
+        sf(self, "blocks_strongly", False)
+
+    cdef int slot_len, sub_len
+    if _atom.SLOT[0]:
+        slot_len = strlen(_atom.SLOT)
+        if _atom.SLOT[0] == '*' or _atom.SLOT[0] == '=':
+            sf(self, "slot_operator", _atom.SLOT)
+            sf(self, "slot", None)
+            sf(self, "subslot", None)
+        elif _atom.SLOT[slot_len-1] == '=':
+            sf(self, "slot_operator", _atom.SLOT[slot_len-1:])
+            sf(self, "slot", _atom.SLOT[:slot_len-1])
+            sf(self, "subslot", None)
+        elif _atom.SUBSLOT[0]:
+            sub_len = strlen(_atom.SUBSLOT)
+            sf(self, "slot", _atom.SLOT)
+            if _atom.SUBSLOT[sub_len-1] == '=':
+                sf(self, "slot_operator", _atom.SUBSLOT[sub_len-1:])
+                sf(self, "subslot", _atom.SUBSLOT[:sub_len-1])
+            else:
+                sf(self, "slot_operator", None)
+                sf(self, "subslot", _atom.SUBSLOT)
+        else:
+            sf(self, "slot", _atom.SLOT)
+            sf(self, "subslot", None)
+            sf(self, "slot_operator", None)
+    else:
+        sf(self, "slot", None)
+        sf(self, "subslot", None)
+        sf(self, "slot_operator", None)
+
+    if _atom.USE_DEPS[0] == NULL:
+        sf(self, "use", None)
+    else:
+        use_deps = []
+        i = 0
+        while _atom.USE_DEPS[i] != NULL:
+            use_deps.append(_atom.USE_DEPS[i])
+            i = i + 1
+        sf(self, "use", tuple(sorted(use_deps)))
+
+    sf(self, "negate_vers", negate_vers)
+    sf(self, "_hash", hash(atom_string))
+
+    catom.atom_free(_atom)
