@@ -238,10 +238,11 @@ cmp_code cpv_cmp(const CPV *c1, const CPV *c2)
     if (!c1 || !c2)
         return ERROR;
 
-    if (strcmp(c1->CATEGORY, c2->CATEGORY) ||
-        strcmp(c1->PN, c2->PN))
-        return NOT_EQUAL;
-
+    int ret;
+    if (ret = strcmp(c1->CATEGORY, c2->CATEGORY))
+        return ret > 0 ? NEWER : OLDER;
+    if (ret = strcmp(c1->PN, c2->PN))
+        return ret > 0 ? NEWER : OLDER;
     return version_cmp(c1->PVR, c2->PVR);
 }
 

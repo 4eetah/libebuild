@@ -71,7 +71,7 @@ cdef class cpv(object):
         elif op == Py_EQ:
             return ret == ccpv.EQUAL
         elif op == Py_NE:
-            return ret == ccpv.NOT_EQUAL
+            return ret != ccpv.EQUAL
         elif op == Py_GT:
             return ret == ccpv.NEWER
         elif op == Py_GE:

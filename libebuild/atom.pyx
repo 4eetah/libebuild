@@ -113,7 +113,7 @@ cdef class atom(object):
         elif op == Py_EQ:
             return ret == catom.EQUAL
         elif op == Py_NE:
-            return ret == catom.NOT_EQUAL
+            return ret != catom.EQUAL
         elif op == Py_GT:
             return ret == catom.NEWER
         elif op == Py_GE:
@@ -193,6 +193,8 @@ def catom_init(self, const char *atom_string, negate_vers=False, int eapi=6):
         sf(self, "subslot", None)
         sf(self, "slot_operator", None)
 
+    cdef bint override_kls = 0
+    cdef char c
     if _atom.USE_DEPS[0] == NULL:
         sf(self, "use", None)
     else:
@@ -200,8 +202,13 @@ def catom_init(self, const char *atom_string, negate_vers=False, int eapi=6):
         i = 0
         while _atom.USE_DEPS[i] != NULL:
             use_deps.append(_atom.USE_DEPS[i])
+            c = _atom.USE_DEPS[i][strlen(_atom.USE_DEPS[i])-1]
+            if c == '=' or c == '?':
+                override_kls = 1
             i = i + 1
         sf(self, "use", tuple(sorted(use_deps)))
+        if override_kls:
+            sf(self, '__class__', self._transitive_use_atom)
 
     sf(self, "negate_vers", negate_vers)
     sf(self, "_hash", hash(atom_string))
