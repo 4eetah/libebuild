@@ -190,6 +190,7 @@ ATOM *atom_alloc(const char* atom_string)
 
     // version
     ptr = end_ptr;
+    ret->PV = end_ptr + 1;
     while (ptr > ret->PN) {
         if (ptr[0] == '-' && isdigit(ptr[1])) {
             tmp_ptr = ptr;
@@ -207,15 +208,13 @@ ATOM *atom_alloc(const char* atom_string)
     ret->suffixes[id].suffix = SUF_NORM;
     ret->suffixes[id].val = 0;
 
-    if (ptr == ret->PN) {
-        if ((ret->pfx_op != ATOM_OP_NONE) || (ret->sfx_op != ATOM_OP_NONE))
-            atom_error(ret, E_INVALID_ATOM_OP_NONEMPTY_UNVER);
+    if (ret->pfx_op == ATOM_OP_NONE) {
+        if (ptr != ret->PN && isvalid_version(ret->PV))
+            atom_error(ret, E_INVALID_ATOM_OP_EMPTY_VER);
         // set empty version
         ret->P   = end_ptr + 1;
         ret->PV  = end_ptr + 1;
         ret->PVR = end_ptr + 1;
-    } else if (ret->pfx_op == ATOM_OP_NONE) {
-        atom_error(ret, E_INVALID_ATOM_OP_EMPTY_VER);
     } else if (!isvalid_version(ret->PV)) {
         atom_error(ret, E_INVALID_VERSION);
     } else {

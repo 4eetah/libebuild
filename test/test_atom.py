@@ -1,15 +1,10 @@
 import os, sys
-builddir = 'build/lib.linux-x86_64-2.7'
-libdir = 'libebuild'
 sep = os.path.sep
 prev = sep.join(os.path.abspath(os.path.curdir).split(sep)[:-1])
 sys.path.append(prev)
-sys.path.append(sep.join([prev,builddir]))
-sys.path.append(sep.join([prev,libdir]))
-
 from unittest import TestCase
-from error import InvalidAtom
-from atom import atom
+from libebuild.atom import atom
+from pkgcore.ebuild.errors import MalformedAtom
 from functools import partial
 
 valid_atoms = [
@@ -151,7 +146,7 @@ class TestAtom(TestCase):
     def test_random_batch(self):
         for atom_str in invalid_atoms:
             print "%50s <-- invalid" % atom_str
-            self.assertRaises(InvalidAtom, atom, atom_str)
+            self.assertRaises(MalformedAtom, atom, atom_str)
 
         for atom_str in valid_atoms:
             print "%50s < -- valid" % atom_str
@@ -162,14 +157,14 @@ class TestAtom(TestCase):
         for postfix in (':1', ':asdf', '[x]', '[x,y]',
                         ':1[x,y]', '[x,y]:1', ':1::repo'):
             atom_str = atom_base + postfix
-            self.assertRaises(InvalidAtom, atom, atom_str, eapi=0)
+            self.assertRaises(MalformedAtom, atom, atom_str, eapi=0)
         self.check_use(0)
 
     def test_eapi1(self):
         atom_base = "=cat/pkg-4.1"
         for postfix in ('[x]', '[x,y]', ':1[x,y]', '[x,y]:1', ':1:repo'):
             atom_str = atom_base + postfix
-            self.assertRaises(InvalidAtom, atom, atom_str, eapi=1)
+            self.assertRaises(MalformedAtom, atom, atom_str, eapi=1)
         self.check_use(1)
 
     def test_eapi2(self):
@@ -208,37 +203,37 @@ class TestAtom(TestCase):
             kls('%s[!x=]' % atom_str)
 
             # '.' not a valid char in use deps
-            self.assertRaises(InvalidAtom, kls, "%s[x.y]" % atom_str)
+            self.assertRaises(MalformedAtom, kls, "%s[x.y]" % atom_str)
 
             # Use deps start with an alphanumeric char (non-transitive)
-            self.assertRaises(InvalidAtom, kls, "%s[@x]" % atom_str)
-            self.assertRaises(InvalidAtom, kls, "%s[_x]" % atom_str)
-            self.assertRaises(InvalidAtom, kls, "%s[+x]" % atom_str)
-            self.assertRaises(InvalidAtom, kls, "%s[-@x]" % atom_str)
-            self.assertRaises(InvalidAtom, kls, "%s[-_x]" % atom_str)
-            self.assertRaises(InvalidAtom, kls, "%s[-+x]" % atom_str)
-            self.assertRaises(InvalidAtom, kls, "%s[--x]" % atom_str)
-            self.assertRaises(InvalidAtom, kls, "%s[]" % atom_str)
-            self.assertRaises(InvalidAtom, kls, "%s[-]" % atom_str)
+            self.assertRaises(MalformedAtom, kls, "%s[@x]" % atom_str)
+            self.assertRaises(MalformedAtom, kls, "%s[_x]" % atom_str)
+            self.assertRaises(MalformedAtom, kls, "%s[+x]" % atom_str)
+            self.assertRaises(MalformedAtom, kls, "%s[-@x]" % atom_str)
+            self.assertRaises(MalformedAtom, kls, "%s[-_x]" % atom_str)
+            self.assertRaises(MalformedAtom, kls, "%s[-+x]" % atom_str)
+            self.assertRaises(MalformedAtom, kls, "%s[--x]" % atom_str)
+            self.assertRaises(MalformedAtom, kls, "%s[]" % atom_str)
+            self.assertRaises(MalformedAtom, kls, "%s[-]" % atom_str)
 
-            self.assertRaises(InvalidAtom, kls, "dev-util/diffball[foon")
-            self.assertRaises(InvalidAtom, kls, "dev-util/diffball[[fo]")
-            self.assertRaises(InvalidAtom, kls, "dev-util/diffball[x][y]")
-            self.assertRaises(InvalidAtom, kls, "dev-util/diffball[x]:1")
-            self.assertRaises(InvalidAtom, kls, "dev-util/diffball[x]a")
-            self.assertRaises(InvalidAtom, kls, "dev-util/diffball[--]")
-            self.assertRaises(InvalidAtom, kls, "dev-util/diffball[x??]")
-            self.assertRaises(InvalidAtom, kls, "dev-util/diffball[x=?]")
-            self.assertRaises(InvalidAtom, kls, "dev-util/diffball[x?=]")
-            self.assertRaises(InvalidAtom, kls, "dev-util/diffball[x==]")
-            self.assertRaises(InvalidAtom, kls, "dev-util/diffball[x??]")
-            self.assertRaises(InvalidAtom, kls, "dev-util/diffball[!=]")
-            self.assertRaises(InvalidAtom, kls, "dev-util/diffball[!?]")
-            self.assertRaises(InvalidAtom, kls, "dev-util/diffball[!!x?]")
-            self.assertRaises(InvalidAtom, kls, "dev-util/diffball[!-x?]")
+            self.assertRaises(MalformedAtom, kls, "dev-util/diffball[foon")
+            self.assertRaises(MalformedAtom, kls, "dev-util/diffball[[fo]")
+            self.assertRaises(MalformedAtom, kls, "dev-util/diffball[x][y]")
+            self.assertRaises(MalformedAtom, kls, "dev-util/diffball[x]:1")
+            self.assertRaises(MalformedAtom, kls, "dev-util/diffball[x]a")
+            self.assertRaises(MalformedAtom, kls, "dev-util/diffball[--]")
+            self.assertRaises(MalformedAtom, kls, "dev-util/diffball[x??]")
+            self.assertRaises(MalformedAtom, kls, "dev-util/diffball[x=?]")
+            self.assertRaises(MalformedAtom, kls, "dev-util/diffball[x?=]")
+            self.assertRaises(MalformedAtom, kls, "dev-util/diffball[x==]")
+            self.assertRaises(MalformedAtom, kls, "dev-util/diffball[x??]")
+            self.assertRaises(MalformedAtom, kls, "dev-util/diffball[!=]")
+            self.assertRaises(MalformedAtom, kls, "dev-util/diffball[!?]")
+            self.assertRaises(MalformedAtom, kls, "dev-util/diffball[!!x?]")
+            self.assertRaises(MalformedAtom, kls, "dev-util/diffball[!-x?]")
         else:
-            self.assertRaises(InvalidAtom, kls, "dev-util/diffball[foo]")
-            self.assertRaises(InvalidAtom, kls, "dev-util/diffball[bar]")
+            self.assertRaises(MalformedAtom, kls, "dev-util/diffball[foo]")
+            self.assertRaises(MalformedAtom, kls, "dev-util/diffball[bar]")
 
         if eapi >= 4:
             kls('%s[x(+)]' % atom_str)
@@ -253,11 +248,11 @@ class TestAtom(TestCase):
             kls("%s[-missing(-),debug]" % atom_str)
             kls("%s[-missing(+),debug(+)]" % atom_str)
             kls("%s[missing(+),debug(+)]" % atom_str)
-            self.assertRaises(InvalidAtom, kls, '%s[x(+-)]' % atom_str)
-            self.assertRaises(InvalidAtom, kls, '%s[x(@)]' % atom_str)
+            self.assertRaises(MalformedAtom, kls, '%s[x(+-)]' % atom_str)
+            self.assertRaises(MalformedAtom, kls, '%s[x(@)]' % atom_str)
         else:
-            self.assertRaises(InvalidAtom, kls, '%s[x(+)]' % atom_str)
-            self.assertRaises(InvalidAtom, kls, '%s[x(-)]' % atom_str)
+            self.assertRaises(MalformedAtom, kls, '%s[x(+)]' % atom_str)
+            self.assertRaises(MalformedAtom, kls, '%s[x(-)]' % atom_str)
 
     def test_intersects(self):
         for this, that, result in [

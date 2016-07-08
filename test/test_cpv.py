@@ -1,15 +1,10 @@
 import os, sys
-builddir = 'build/lib.linux-x86_64-2.7'
-libdir = 'libebuild'
 sep = os.path.sep
 prev = sep.join(os.path.abspath(os.path.curdir).split(sep)[:-1])
 sys.path.append(prev)
-sys.path.append(sep.join([prev,builddir]))
-sys.path.append(sep.join([prev,libdir]))
-
 from unittest import TestCase
-from error import InvalidCPV
-from cpv import cpv
+from libebuild.cpv import cpv
+from pkgcore.ebuild.errors import InvalidCPV
 
 class MiscTest(TestCase):
     def test_parse_batch(self):
