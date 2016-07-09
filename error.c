@@ -1,4 +1,4 @@
-#include "common.h"
+#include "elib.h"
 eerror_t ebuild_errno = E_OK;
 
 const char *ebuild_strerror(eerror_t code)

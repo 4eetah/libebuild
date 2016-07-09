@@ -1,4 +1,4 @@
-#include "common.h"
+#include "elib.h"
 #define atom_error(atom_ptr, code) \
     do { \
         set_ebuild_errno(code); \

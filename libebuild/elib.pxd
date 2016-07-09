@@ -1,4 +1,4 @@
-cdef extern from "../common.h":
+cdef extern from "../elib.h":
 
     const char * const atom_op_str[]
     int ebuild_errno

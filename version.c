@@ -1,4 +1,4 @@
-#include "common.h"
+#include "elib.h"
 
 const char * const atom_op_str[] = { "", ">", ">=", "=", "<=", "<", "~", "!", "!!", "*" };
 const char * const version_suffixes_str[] = {"alpha", "beta", "pre", "rc", "p", ""};

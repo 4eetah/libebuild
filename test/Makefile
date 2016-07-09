@@ -13,7 +13,7 @@ OBJ=$(patsubst %.c,%.o,$(SRC))
 
 mytest: $(MYMOD) 
 
-%.o: %.c $(SRC_DIR)/common.h
+%.o: %.c $(SRC_DIR)/elib.h
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 mytest_cpv: $(OBJ) mytest_cpv.o

@@ -1,4 +1,4 @@
-#include "common.h"
+#include "elib.h"
 
 int isvalid_eapi_reqs(const ATOM *atom, int eapi)
 {

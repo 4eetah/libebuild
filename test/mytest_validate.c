@@ -1,4 +1,4 @@
-#include "common.h"
+#include "elib.h"
 
 const char * const my_suffix[] = {"alpha", "beta", "pre", "rc", "nonexistent", "", "p"};
 

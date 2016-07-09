@@ -1,4 +1,4 @@
-#include "common.h"
+#include "elib.h"
 #define cpv_error(cpv_ptr, code) \
     do { \
         set_ebuild_errno(code); \
