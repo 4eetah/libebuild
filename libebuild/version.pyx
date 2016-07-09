@@ -14,7 +14,7 @@ def version_cmp_ext(v1, r1, v2, r2):
             return 0
         else:
             return -1
-    elif v2 == None or v2 == '':
+    elif v2 == None:
         return 1
 
     if r1 != None:
