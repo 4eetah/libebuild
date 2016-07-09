@@ -9,16 +9,20 @@ def version_cmp(v1, v2):
     return ret
 
 def version_cmp_ext(v1, r1, v2, r2):
-    if v1 == v2:
-        return (r1 > r2) - (r1 < r2)
-    if v1 is None:
-        v1 = ''
-    if v2 is None:
-        v2 = ''
-    ret = version_cmp(v1, v2)
-    if ret == 0:
-        return (r1 > r2) - (r1 < r2)
-    return ret
+    if v1 == None:
+        if v2 == None:
+            return 0
+        else:
+            return -1
+    elif v2 == None or v2 == '':
+        return 1
+
+    if r1 != None:
+        v1 = v1 + "-r" + str(r1)
+    if r2 != None:
+        v2 = v2 + "-r" + str(r2)
+
+    return version_cmp(v1, v2)
 
 def version_match(v1, v2, operation):
     cdef elib.atom_op op = elib.atom_op_from_str(operation)

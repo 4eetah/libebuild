@@ -230,9 +230,6 @@ void cpv_free(CPV *cpv)
     free(cpv);
 }
 
-/*
- * NOTE: unversioned cpv implicitly gets 0 version
- */
 cmp_code cpv_cmp(const CPV *c1, const CPV *c2)
 {
     if (!c1 || !c2)
@@ -243,6 +240,13 @@ cmp_code cpv_cmp(const CPV *c1, const CPV *c2)
         return ret > 0 ? NEWER : OLDER;
     if (ret = strcmp(c1->PN, c2->PN))
         return ret > 0 ? NEWER : OLDER;
+    if (!*c1->PVR) {
+        if (!*c2->PVR)
+            return EQUAL;
+        else
+            return OLDER;
+    } else if (!*c2->PVR)
+        return NEWER;
     return version_cmp(c1->PVR, c2->PVR);
 }
 
