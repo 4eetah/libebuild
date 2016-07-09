@@ -7,9 +7,12 @@ from distutils.extension import Extension
 from Cython.Build import cythonize
 
 libebuild_modules = [
-    Extension("libebuild.cpv", ["libebuild/cpv.pyx", "validate.c", "version.c", "error.c"]),
-    Extension("libebuild.atom", ["libebuild/atom.pyx", "validate.c", "version.c", "error.c"]),
-    Extension("libebuild.version", ["libebuild/version.pyx", "validate.c", "error.c"]),
+    Extension("libebuild.cpv",
+             ["libebuild/cpv.pyx", "cpv.c", "validate.c", "version.c", "error.c"]),
+    Extension("libebuild.atom",
+             ["libebuild/atom.pyx", "atom.c", "validate.c", "version.c", "error.c"]),
+    Extension("libebuild.version",
+             ["libebuild/version.pyx", "version.c", "validate.c", "error.c"]),
 ]
 
 setup(

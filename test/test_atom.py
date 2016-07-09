@@ -145,11 +145,11 @@ class TestAtom(TestCase):
 
     def test_random_batch(self):
         for atom_str in invalid_atoms:
-            print "%50s <-- invalid" % atom_str
+            print("%50s <-- invalid" % atom_str)
             self.assertRaises(MalformedAtom, atom, atom_str)
 
         for atom_str in valid_atoms:
-            print "%50s < -- valid" % atom_str
+            print("%50s < -- valid" % atom_str)
             self.assertIsInstance(atom(atom_str), atom)
 
     def test_eapi0(self):

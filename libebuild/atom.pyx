@@ -1,32 +1,33 @@
-cimport catom 
+# cython: c_string_type=str, c_string_encoding=ascii
+cimport elib 
 from cpython.object cimport Py_LT, Py_LE, Py_EQ, Py_GT, Py_GE, Py_NE
 from pkgcore.ebuild.errors import MalformedAtom
 
 cdef class atom(object):
-    cdef catom.ATOM *_atom
-    cdef bytes atom_str
+    cdef elib.ATOM *_atom
+    cdef str atom_str
 
-    cdef readonly char *category
-    cdef readonly char *package
-    cdef readonly str   cpvstr
-    cdef readonly str   key
-    cdef readonly bytes op
-    cdef readonly object blocks
-    cdef readonly object blocks_strongly
-    cdef readonly bytes version
-    cdef readonly bytes fullver
+    cdef readonly str category
+    cdef readonly str package
+    cdef readonly str cpvstr
+    cdef readonly str key
+    cdef readonly str op
+    cdef readonly str blocks
+    cdef readonly str blocks_strongly
+    cdef readonly str version
+    cdef readonly str fullver
     cdef readonly object revision
-    cdef readonly bytes slot_operator
-    cdef readonly bytes slot
-    cdef readonly bytes subslot
-    cdef readonly bytes repo_id
-    cdef readonly tuple use 
+    cdef readonly str slot_operator
+    cdef readonly str slot
+    cdef readonly str subslot
+    cdef readonly str repo_id
+    cdef readonly tuple  use 
 
-    def __init__(self, const char *atom_string, int eapi=6):
-        self._atom = catom.atom_alloc_eapi(atom_string, eapi)
+    def __init__(self, atom_string, int eapi=6):
+        self.atom_str = atom_string
+        self._atom = elib.atom_alloc_eapi(self.atom_str, eapi)
         if self._atom is NULL:
-            raise MalformedAtom(catom.ebuild_strerror(catom.ebuild_errno))
-        self.atom_str = <bytes>atom_string
+            raise MalformedAtom(elib.ebuild_strerror(elib.ebuild_errno))
 
         self.category = self._atom.CATEGORY
         self.package = self._atom.PN
@@ -40,19 +41,19 @@ cdef class atom(object):
         else:
             self.cpvstr = self.key
 
-        if self._atom.pfx_op != catom.ATOM_OP_NONE:
-            if self._atom.sfx_op == catom.ATOM_OP_STAR:
-                self.op = catom.atom_op_str[<int>self._atom.pfx_op] + \
-                          catom.atom_op_str[<int>self._atom.sfx_op]
+        if self._atom.pfx_op != elib.ATOM_OP_NONE:
+            if self._atom.sfx_op == elib.ATOM_OP_STAR:
+                self.op = elib.atom_op_str[<int>self._atom.pfx_op] + \
+                          elib.atom_op_str[<int>self._atom.sfx_op]
             else:
-                self.op = catom.atom_op_str[<int>self._atom.pfx_op]
+                self.op = elib.atom_op_str[<int>self._atom.pfx_op]
         else:
-            self.op = b''
+            self.op = ''
 
-        if self._atom.block_op == catom.ATOM_OP_BLOCK:
+        if self._atom.block_op == elib.ATOM_OP_BLOCK:
             self.blocks = True
             self.blocks_strongly = False
-        elif self._atom.block_op == catom.ATOM_OP_BLOCK_HARD:
+        elif self._atom.block_op == elib.ATOM_OP_BLOCK_HARD:
             self.blocks = True
             self.blocks_strongly = True
         else:
@@ -96,7 +97,7 @@ cdef class atom(object):
             self.use = tuple(sorted(use_deps))
 
     def __dealloc__(self):
-        catom.atom_free(self._atom)
+        elib.atom_free(self._atom)
 
     def __str__(self):
         return self.atom_str
@@ -105,31 +106,32 @@ cdef class atom(object):
         return '<%s %s @#%x>' % (self.__class__.__name__, self.atom_str, id(self))
 
     def __richcmp__(atom self, atom other, int op):
-        cdef catom.cmp_code ret = catom.atom_cmp(self._atom, other._atom)
+        cdef elib.cmp_code ret = elib.atom_cmp(self._atom, other._atom)
         if   op == Py_LT:
-            return ret == catom.OLDER
+            return ret == elib.OLDER
         elif op == Py_LE:
-            return ret == catom.OLDER or ret == catom.EQUAL
+            return ret == elib.OLDER or ret == elib.EQUAL
         elif op == Py_EQ:
-            return ret == catom.EQUAL
+            return ret == elib.EQUAL
         elif op == Py_NE:
-            return ret != catom.EQUAL
+            return ret != elib.EQUAL
         elif op == Py_GT:
-            return ret == catom.NEWER
+            return ret == elib.NEWER
         elif op == Py_GE:
-            return ret == catom.NEWER or ret == catom.EQUAL
+            return ret == elib.NEWER or ret == elib.EQUAL
         else:
             assert False
 
     def intersects(atom self, atom other):
-        return catom.atom_intersect(self._atom, other._atom) > 0
+        return elib.atom_intersect(self._atom, other._atom) > 0
 
 from libc.string cimport strlen
 
-def catom_init(self, const char *atom_string, negate_vers=False, int eapi=6):
-    cdef catom.ATOM *_atom = catom.atom_alloc_eapi(atom_string, eapi)
+def elib_init(self, atom_string, negate_vers=False, int eapi=6):
+    atom_string = atom_string
+    cdef elib.ATOM *_atom = elib.atom_alloc_eapi(atom_string, eapi)
     if _atom is NULL:
-        raise MalformedAtom(atom_string, catom.ebuild_strerror(catom.ebuild_errno))
+        raise MalformedAtom(atom_string, elib.ebuild_strerror(elib.ebuild_errno))
 
     sf = object.__setattr__
 
@@ -145,19 +147,19 @@ def catom_init(self, const char *atom_string, negate_vers=False, int eapi=6):
     else:
         sf(self, "cpvstr", self.key)
 
-    if _atom.pfx_op != catom.ATOM_OP_NONE:
-        if _atom.sfx_op == catom.ATOM_OP_STAR:
-            sf(self, "op", catom.atom_op_str[<int>_atom.pfx_op] + \
-                           catom.atom_op_str[<int>_atom.sfx_op])
+    if _atom.pfx_op != elib.ATOM_OP_NONE:
+        if _atom.sfx_op == elib.ATOM_OP_STAR:
+            sf(self, "op", elib.atom_op_str[<int>_atom.pfx_op] + \
+                           elib.atom_op_str[<int>_atom.sfx_op])
         else:
-            sf(self, "op", catom.atom_op_str[<int>_atom.pfx_op])
+            sf(self, "op", elib.atom_op_str[<int>_atom.pfx_op])
     else:
         sf(self, "op", '')
 
-    if _atom.block_op == catom.ATOM_OP_BLOCK:
+    if _atom.block_op == elib.ATOM_OP_BLOCK:
         sf(self, "blocks", True)
         sf(self, "blocks_strongly", False)
-    elif _atom.block_op == catom.ATOM_OP_BLOCK_HARD:
+    elif _atom.block_op == elib.ATOM_OP_BLOCK_HARD:
         sf(self, "blocks", True)
         sf(self, "blocks_strongly", True)
     else:
@@ -213,4 +215,4 @@ def catom_init(self, const char *atom_string, negate_vers=False, int eapi=6):
     sf(self, "negate_vers", negate_vers)
     sf(self, "_hash", hash(atom_string))
 
-    catom.atom_free(_atom)
+    elib.atom_free(_atom)
